@@ -1,10 +1,10 @@
 "use client";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import * as Icon from "react-bootstrap-icons";
+import { useEffect, useState, useCallback } from "react";
 import { useLogout } from "@/components/student/logout";
-import { Navbar, Nav, Container, Table, Button } from "react-bootstrap";
+import { Container, Table, Spinner } from "react-bootstrap";
+import SaNavbar from "@/components/student/navbar";
 
 const Dashboard = () => {
   const [saId, setSaId] = useState(null);
@@ -38,9 +38,9 @@ const Dashboard = () => {
     }
   }, [saId]);
 
-  const toggleSidebar = () => {
-    setIsSidebarVisible(!isSidebarVisible);
-  };
+  const toggleSidebar = useCallback(() => {
+    setIsSidebarVisible((prev) => !prev);
+  }, []);
 
   const retrieveSaDutySchedule = async () => {
     const url =
@@ -61,70 +61,42 @@ const Dashboard = () => {
   };
 
   if (isLoading) {
-    return null;
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      </div>
+    );
   }
 
   return (
     <>
-      {/* Top Navbar */}
-      <Navbar
-        expand="lg"
-        style={{ backgroundColor: "#343a40" }}
-        className="px-3"
+      <SaNavbar
+        firstname={firstname}
+        lastname={lastname}
+        isSidebarVisible={isSidebarVisible}
+        toggleSidebar={toggleSidebar}
+        logout={logout}
+      />
+
+      <div
+        style={{
+          display: "flex",
+          height: "100vh",
+          marginLeft: isSidebarVisible ? "250px" : "0",
+          transition: "margin-left 0.3s ease",
+        }}
       >
-        <Navbar.Brand href="#" className="text-light">
-          Student Assistant
-        </Navbar.Brand>
-        <Button
-          variant="outline-light"
-          onClick={toggleSidebar}
-          className="me-2"
-        >
-          {isSidebarVisible ? <Icon.List size={20} /> : <Icon.X size={20} />}
-        </Button>
-        <h6 className="ms-auto" style={{ color: "white" }}>
-          {firstname} {lastname}
-        </h6>
-      </Navbar>
-
-      <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-        {/* Sidebar */}
-        <div
+        <Container
+          fluid
           style={{
-            width: isSidebarVisible ? "250px" : "0",
-            color: "white",
-            padding: isSidebarVisible ? "20px" : "0",
-            overflow: "hidden",
-            transition: "width 0.3s ease, padding 0.3s ease",
+            flex: 1,
+            padding: "20px",
+            overflowY: "auto",
+            marginTop: "56px",
           }}
-          className="bg-dark"
         >
-          {isSidebarVisible && (
-            <Nav className="flex-column">
-              <Nav.Link
-                href="/student-assistant/dashboard"
-                className="text-light"
-              >
-                <Icon.Grid className="me-2" /> Dashboard
-              </Nav.Link>
-              <Nav.Link
-                href="/student-assistant/track-time"
-                className="text-light"
-              >
-                <Icon.Stopwatch className="me-2" /> Track Time
-              </Nav.Link>
-              <Nav.Link href="apply-leave" className="text-light">
-                <Icon.FileEarmarkText className="me-2" /> Apply Leave
-              </Nav.Link>
-              <Nav.Link onClick={logout} className="text-light">
-                <Icon.BoxArrowDownRight className="me-2" /> Logout
-              </Nav.Link>
-            </Nav>
-          )}
-        </div>
-
-        {/* Main Content */}
-        <Container fluid style={{ flex: 1, padding: "20px" }}>
           <h1>Dashboard</h1>
 
           <Table>

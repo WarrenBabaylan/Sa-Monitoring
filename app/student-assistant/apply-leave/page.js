@@ -17,6 +17,7 @@ import {
   Table,
 } from "react-bootstrap";
 import { useLogout } from "@/components/student/logout";
+import { retrieveLeaveRequest } from "@/components/student/retrieveLeaveRequests";
 
 const Leave = () => {
   const [saId, setSaId] = useState(null);
@@ -51,16 +52,10 @@ const Leave = () => {
   }, [router]);
 
   useEffect(() => {
-    if (saId !== null) {
-      retrieveLeaveRequest();
-    }
-  }, [saId]);
-
-  useEffect(() => {
     if (selectedDate) {
-      retrieveLeaveRequest();
+      retrieveLeaveRequest(saId, selectedDate, setGetSaLeaveRequests);
     }
-  }, [selectedDate]);
+  }, [saId, selectedDate]);
 
   const toggleSidebar = () => {
     setIsSidebarVisible(!isSidebarVisible);
@@ -108,7 +103,7 @@ const Leave = () => {
 
     if (response.data == 1) {
       alert("Leave request submitted successfully");
-      retrieveLeaveRequest();
+      retrieveLeaveRequest(saId, selectedDate, setGetSaLeaveRequests);
       setLeaveType("");
       setCustomLeaveType("");
       setReason("");
@@ -116,31 +111,6 @@ const Leave = () => {
     } else {
       alert("Failed to submit leave request");
     }
-  };
-
-  const retrieveLeaveRequest = async () => {
-    const url =
-      "http://localhost/nextjs/api/sa-monitoring/studentAssistant.php";
-
-    const formattedDate = selectedDate
-      ? `${selectedDate.getFullYear()}-${String(
-          selectedDate.getMonth() + 1
-        ).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`
-      : null;
-
-    const jsondata = {
-      saId: saId,
-      date: formattedDate,
-    };
-
-    const response = await axios.get(url, {
-      params: {
-        json: JSON.stringify(jsondata),
-        operation: "displayLeaveRequest",
-      },
-    });
-    setGetSaLeaveRequests(response.data);
-    console.log(response.data);
   };
 
   if (isLoading) {

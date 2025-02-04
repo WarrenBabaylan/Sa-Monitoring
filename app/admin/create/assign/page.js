@@ -2,8 +2,9 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Container, Button, Form, Modal, Card, Badge } from "react-bootstrap";
+import { Container, Button, Modal, Card, Badge } from "react-bootstrap";
 import * as Icon from "react-bootstrap-icons";
+import FormField from "@/components/form";
 
 const AssignSchedule = () => {
   const [adminId, setAdminId] = useState(null);
@@ -50,7 +51,8 @@ const AssignSchedule = () => {
   };
 
   const retrieveDays = async () => {
-    const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+    //const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+    const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
 
     const response = await axios.get(url, {
       params: {
@@ -62,7 +64,8 @@ const AssignSchedule = () => {
   };
 
   const retrieveDutyHours = async () => {
-    const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+    //const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+    const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
 
     const response = await axios.get(url, {
       params: {
@@ -206,21 +209,22 @@ const AssignSchedule = () => {
           </Modal>
         )}
 
-        {/* Form */}
-        <Form.Group controlId="day">
-          <Form.Label>Day</Form.Label>
-          <Form.Control as="select" value={days} onChange={handleSelectionDay}>
-            <option value="">Select Day</option>
-            {getDays.map((day, index) => (
-              <option key={index} value={day.day_id}>
-                {day.day_name}
-              </option>
-            ))}
-          </Form.Control>
-        </Form.Group>
+        <FormField
+          label={"Days"}
+          as={"select"}
+          value={days}
+          onChange={handleSelectionDay}
+        >
+          <option value="">Select Day</option>
+          {getDays.map((day, index) => (
+            <option key={index} value={day.day_id}>
+              {day.day_name}
+            </option>
+          ))}
+        </FormField>
 
         {/* Display Selected Days */}
-        <div className="mt-3">
+        <div className="mb-2">
           {selectedDays.map((day) => (
             <Badge
               key={day.day_id}
@@ -235,39 +239,33 @@ const AssignSchedule = () => {
           ))}
         </div>
 
-        <Form.Group controlId="startTime" className="mt-3">
-          <Form.Label>Start Time</Form.Label>
-          <Form.Control
-            type="time"
-            value={startTime}
-            onChange={handleStartTimeChange}
-          />
-        </Form.Group>
+        <FormField
+          label={"Start Time"}
+          type={"time"}
+          value={startTime}
+          onChange={handleStartTimeChange}
+        />
 
-        <Form.Group controlId="endTime" className="mt-3">
-          <Form.Label>End Time</Form.Label>
-          <Form.Control
-            type="time"
-            value={endTime}
-            onChange={handleEndTimeChange}
-          />
-        </Form.Group>
+        <FormField
+          label={"End Time"}
+          type={"time"}
+          value={endTime}
+          onChange={handleEndTimeChange}
+        />
 
-        <Form.Group controlId="dutyhours" className="mt-3">
-          <Form.Label>Required Duty Hours</Form.Label>
-          <Form.Control
-            as="select"
-            value={dutyHours}
-            onChange={selectedDutyHours}
-          >
-            <option value="">Select Duty Hours</option>
-            {getDutyHours.map((hours, index) => (
-              <option key={index} value={hours.duty_hours_id}>
-                {hours.required_duty_hours} hours
-              </option>
-            ))}
-          </Form.Control>
-        </Form.Group>
+        <FormField
+          label={"Select duty hours"}
+          as={"select"}
+          value={dutyHours}
+          onChange={selectedDutyHours}
+        >
+          <option value="">Select Duty Hours</option>
+          {getDutyHours.map((hours, index) => (
+            <option key={index} value={hours.duty_hours_id}>
+              {hours.required_duty_hours} hours
+            </option>
+          ))}
+        </FormField>
 
         <Button
           variant="primary"

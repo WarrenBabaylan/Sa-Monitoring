@@ -1,11 +1,8 @@
 "use client";
 import axios from "axios";
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import * as Icon from "react-bootstrap-icons";
+import { useState, useEffect, useCallback } from "react";
 import {
-  Navbar,
-  Nav,
   Container,
   Button,
   Form,
@@ -16,6 +13,8 @@ import {
 } from "react-bootstrap";
 import ReusableModal from "@/components/modal";
 import { useLogout } from "@/components/admin/logout";
+import AdminNavbar from "@/components/admin/navbar";
+import FormField from "@/components/form";
 
 const Create = () => {
   const [adminId, setAdminId] = useState(null);
@@ -48,11 +47,23 @@ const Create = () => {
     }
   }, [adminId]);
 
-  const toggleSidebar = () => {
-    setIsSidebarVisible(!isSidebarVisible);
-  };
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSidebarVisible(window.innerWidth >= 768);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  const toggleSidebar = useCallback(() => {
+    setIsSidebarVisible((prev) => !prev);
+  }, []);
 
   const [saId, setSaId] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [getAllSa, setGetAllSa] = useState([]);
   const [getSaById, setGetSaById] = useState([]);
@@ -62,13 +73,11 @@ const Create = () => {
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
 
-  //-----------------Create new Sa Account -----------------//
+  //--------------- Create new Sa Account -----------------//
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("defaultpass");
-
-  const [searchQuery, setSearchQuery] = useState("");
+  const [password, setPassword] = useState("");
 
   const [alertShow, setAlertShow] = useState({
     show: false,
@@ -84,7 +93,8 @@ const Create = () => {
   };
 
   const retrieveAllSa = async () => {
-    const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+    //const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+    const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
 
     const response = await axios.get(url, {
       params: {
@@ -96,7 +106,8 @@ const Create = () => {
   };
 
   const retrieveSaById = async (saId) => {
-    const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+    //const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+    const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
 
     const jsonData = {
       saId: saId,
@@ -105,7 +116,7 @@ const Create = () => {
     const response = await axios.get(url, {
       params: {
         json: JSON.stringify(jsonData),
-        operation: "displaySaById",
+        operation: "displayAllSa",
       },
     });
     setGetSaById(response.data);
@@ -135,10 +146,12 @@ const Create = () => {
 
     const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
 
+    setPassword(lastname);
     const jsonData = {
       firstname: firstname,
       lastname: lastname,
       username: username,
+      password: lastname.toLowerCase(),
     };
 
     const formData = new FormData();
@@ -158,6 +171,7 @@ const Create = () => {
         setFirstname("");
         setLastname("");
         setUsername("");
+        setPassword("");
         retrieveAllSa();
       } else if (response.data == 2) {
         showAlert("danger", "Username already exists!");
@@ -187,65 +201,32 @@ const Create = () => {
 
   return (
     <>
-      {/* Top Navbar */}
-      <Navbar
-        expand="lg"
-        style={{ backgroundColor: "#343a40" }}
-        className="px-3"
+      <AdminNavbar
+        firstname={adminFirstname}
+        lastname={adminLastname}
+        isSidebarVisible={isSidebarVisible}
+        toggleSidebar={toggleSidebar}
+        logout={logout}
+      />
+
+      <div
+        style={{
+          display: "flex",
+          height: "100vh",
+          marginLeft: isSidebarVisible ? "250px" : "0",
+          transition: "margin-left 0.3s ease",
+        }}
       >
-        <Navbar.Brand href="#" className="text-light">
-          Admin Page
-        </Navbar.Brand>
-        <Button
-          variant="outline-light"
-          onClick={toggleSidebar}
-          className="me-2"
-        >
-          {isSidebarVisible ? <Icon.List size={20} /> : <Icon.X size={20} />}
-        </Button>
-        <h6 className="ms-auto" style={{ color: "white" }}>
-          {adminFirstname} {adminLastname}
-        </h6>
-      </Navbar>
-
-      <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-        {/* Sidebar */}
-        <div
-          style={{
-            width: isSidebarVisible ? "250px" : "0",
-            color: "white",
-            padding: isSidebarVisible ? "20px" : "0",
-            overflow: "hidden",
-            transition: "width 0.3s ease, padding 0.3s ease",
-          }}
-          className="bg-dark"
-        >
-          {isSidebarVisible && (
-            <Nav className="flex-column">
-              <Nav.Link href="/admin/dashboard" className="text-light">
-                <Icon.Grid className="me-2" /> Dashboard
-              </Nav.Link>
-              <Nav.Link href="/admin/duty_hours" className="text-light">
-                <Icon.Clock className="me-2" /> Duty Hours
-              </Nav.Link>
-              <Nav.Link href="/admin/create" className="text-light">
-                <Icon.PersonPlus className="me-2" /> Student Assistant
-              </Nav.Link>
-              <Nav.Link href="/admin/attendance" className="text-light">
-                <Icon.ClipboardCheck className="me-2" /> Attendance
-              </Nav.Link>
-              <Nav.Link href="/admin/leave-approval" className="text-light">
-                <Icon.Check2Circle className="me-2" /> Leave Approval
-              </Nav.Link>
-              <Nav.Link onClick={logout} className="text-light">
-                <Icon.BoxArrowDownRight className="me-2" /> Logout
-              </Nav.Link>
-            </Nav>
-          )}
-        </div>
-
         {/* Main Content */}
-        <Container fluid style={{ flex: 1, padding: "20px" }}>
+        <Container
+          fluid
+          style={{
+            flex: 1,
+            padding: "20px",
+            overflowY: "auto",
+            marginTop: "56px",
+          }}
+        >
           {alertShow.show && (
             <Modal
               show={alertShow.show}
@@ -354,50 +335,42 @@ const Create = () => {
                 }
               }}
             >
-              <Form.Group className="mb-3">
-                <Form.Label className="text-gray-600">Firstname</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter firstname"
-                  value={firstname}
-                  onChange={(e) => setFirstname(e.target.value)}
-                  autoFocus
-                  className="rounded border border-gray-200 text-black"
-                />
-              </Form.Group>
+              <FormField
+                label={"Firstname"}
+                type={"text"}
+                placeholder={"enter firstname..."}
+                value={firstname}
+                onChange={(e) => {
+                  setFirstname(e.target.value);
+                }}
+              />
 
-              <Form.Group className="mb-3">
-                <Form.Label className="text-gray-600">Lastname</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter lastname"
-                  value={lastname}
-                  onChange={(e) => setLastname(e.target.value)}
-                  className="rounded border border-gray-200 text-black"
-                />
-              </Form.Group>
+              <FormField
+                label={"Lastname"}
+                type={"text"}
+                placeholder={"enter lastname..."}
+                value={lastname}
+                onChange={(e) => {
+                  setLastname(e.target.value);
+                }}
+              />
 
-              <Form.Group className="mb-3">
-                <Form.Label className="text-gray-600">Username</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="rounded border border-gray-200 text-black"
-                />
-              </Form.Group>
+              <FormField
+                label={"Username"}
+                type={"text"}
+                placeholder={"enter username..."}
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                }}
+              />
 
-              <Form.Group className="mb-3">
-                <Form.Label className="text-gray-600">Password</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="rounded border border-gray-200 text-black"
-                  disabled
-                />
-              </Form.Group>
+              <FormField
+                label={"Password"}
+                type={"text"}
+                value={password}
+                disabled={true}
+              />
             </Form>
           </>
         }

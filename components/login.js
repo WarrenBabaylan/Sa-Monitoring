@@ -3,6 +3,7 @@ import axios from "axios";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Container, Card, Form, Button, Alert, Spinner } from "react-bootstrap";
+import FormField from "./form";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -38,7 +39,8 @@ const Login = () => {
       return;
     }
 
-    const url = "http://localhost/nextjs/api/sa-monitoring/login.php";
+    //const url = "http://localhost/nextjs/api/sa-monitoring/login.php";
+    const url = "http://192.168.1.48/nextjs/api/sa-monitoring/login.php";
 
     const jsonData = {
       username: username,
@@ -114,35 +116,32 @@ const Login = () => {
             <p className="text-sm text-[#1e0e4b]">Log in to your account</p>
           </div>
           <Form onKeyDown={handleKeyDown}>
-            <Form.Group className="mb-3">
-              <Form.Label className="text-gray-600">Username</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                ref={usernameRef}
-                autoFocus
-                className="rounded border border-gray-200 text-black"
-              />
-            </Form.Group>
+            <FormField
+              label={"Username"}
+              type={"text"}
+              placeholder={"enter username..."}
+              value={username}
+              onChange={(e) => {
+                setUsername(e.target.value);
+              }}
+              autoFocus={true}
+            />
 
-            <Form.Group className="mb-3">
-              <Form.Label className="text-gray-600">Password</Form.Label>
-              <Form.Control
-                type="password"
-                placeholder="Enter password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                ref={passwordRef}
-                className="rounded border border-gray-200 text-black"
-              />
-            </Form.Group>
+            <FormField
+              label={"Password"}
+              type={"password"}
+              placeholder={"enter password..."}
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+              }}
+              ref={passwordRef}
+            />
 
             <Button
               variant="primary"
               onClick={login}
-              className="w-100 mb-2 bg-[#7747ff] text-white"
+              className="w-100 mt-2 mb-2 bg-[#7747ff] text-white"
               disabled={loading}
             >
               {loading ? (

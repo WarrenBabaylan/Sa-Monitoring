@@ -1,40 +1,52 @@
 "use client";
 import axios from "axios";
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import * as Icon from "react-bootstrap-icons";
-import { Navbar, Nav, Button, Container, Table } from "react-bootstrap";
+import { useEffect, useState, useCallback } from "react";
+import { useLogout } from "@/components/student/logout";
+import { Container, Table, Spinner } from "react-bootstrap";
+import SaNavbar from "@/components/student/navbar";
 
-const Dashboard = () => {
+const TrackTime = () => {
   const [saId, setSaId] = useState(null);
   const [firstname, setFirstname] = useState(null);
   const [lastname, setLastname] = useState(null);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const logout = useLogout();
   const router = useRouter();
 
   const [getSaDutySchedule, setGetSaDutySchedule] = useState([]);
+  const [getSaTimeIn, setGetSaTimeIn] = useState([]);
 
   useEffect(() => {
-    setSaId(sessionStorage.saId);
-    setFirstname(sessionStorage.firstname);
-    setLastname(sessionStorage.lastname);
-  }, []);
+    const storedSaId = sessionStorage.getItem("saId");
+    const storedFirstname = sessionStorage.getItem("firstname");
+    const storedLastname = sessionStorage.getItem("lastname");
+
+    if (!storedSaId) {
+      router.push("/");
+    } else {
+      setSaId(storedSaId);
+      setFirstname(storedFirstname);
+      setLastname(storedLastname);
+      setIsLoading(false);
+    }
+  }, [router]);
 
   useEffect(() => {
     if (saId !== null) {
       retrieveSaDutySchedule();
+      retrieveSaTimeIn();
     }
   }, [saId]);
 
-  const toggleSidebar = () => {
-    setIsSidebarVisible(!isSidebarVisible);
-  };
+  const toggleSidebar = useCallback(() => {
+    setIsSidebarVisible((prev) => !prev);
+  }, []);
 
   const retrieveSaDutySchedule = async () => {
     const url =
       "http://localhost/nextjs/api/sa-monitoring/studentAssistant.php";
-
-    //const url = "http://192.168.1.48/nextjs/api/sa-monitoring/studentAssistant.php";
 
     const jsonData = {
       saId: saId,
@@ -47,164 +59,94 @@ const Dashboard = () => {
       },
     });
     setGetSaDutySchedule(response.data);
-    //console.log("Student Assistants duty schedule:", response.data);
+    console.log(response.data);
   };
 
-  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+  const retrieveSaTimeIn = async () => {
+    const url =
+      "http://localhost/nextjs/api/sa-monitoring/studentAssistant.php";
 
-  const timeSlots = [
-    "07:00 AM",
-    "08:00 AM",
-    "09:00 AM",
-    "10:00 AM",
-    "11:00 AM",
-    "12:00 PM",
-    "01:00 PM",
-    "02:00 PM",
-    "03:00 PM",
-    "04:00 PM",
-    "05:00 PM",
-  ];
+    const jsonData = {
+      saId: saId,
+    };
 
-  const isDayScheduled = (day) => {
-    return getSaDutySchedule.some((schedule) => schedule.day_name === day);
-  };
-
-  const isStartTime = (day, time) => {
-    return getSaDutySchedule.some(
-      (schedule) => schedule.day_name === day && schedule.time_start === time
-    );
-  };
-
-  const isEndTime = (day, time) => {
-    return getSaDutySchedule.some((schedule) => {
-      const endTime = schedule.time_end;
-      const timeEnd = endTime === "06:00 PM" ? "05:00 PM" : endTime;
-
-      return schedule.day_name === day && timeEnd === time;
+    const response = await axios.get(url, {
+      params: {
+        json: JSON.stringify(jsonData),
+        operation: "displaySaTimeInTrack",
+      },
     });
+    setGetSaTimeIn(response.data);
+    console.log(response.data);
   };
 
-  const getFullNameForSchedule = (day, time) => {
-    const schedule = getSaDutySchedule.find(
-      (schedule) =>
-        schedule.day_name === day &&
-        (schedule.time_start === time || schedule.time_end === time)
+  if (isLoading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      </div>
     );
-    return schedule ? `${schedule.sa_fullname}` : "";
-  };
-
-  const logout = () => {
-    const confirmLogout = window.confirm("Are you sure to log out?");
-    if (confirmLogout) {
-      sessionStorage.removeItem("saId");
-      sessionStorage.removeItem("firstname");
-      sessionStorage.removeItem("lastname");
-      router.push("/");
-    }
-  };
+  }
 
   return (
     <>
-      {/* Top Navbar */}
-      <Navbar
-        expand="lg"
-        style={{ backgroundColor: "#343a40" }}
-        className="px-3"
+      <SaNavbar
+        firstname={firstname}
+        lastname={lastname}
+        isSidebarVisible={isSidebarVisible}
+        toggleSidebar={toggleSidebar}
+        logout={logout}
+      />
+
+      <div
+        style={{
+          display: "flex",
+          height: "100vh",
+          marginLeft: isSidebarVisible ? "250px" : "0",
+          transition: "margin-left 0.3s ease",
+        }}
       >
-        <Navbar.Brand href="#" className="text-light">
-          Student Assistant
-        </Navbar.Brand>
-        <Button
-          variant="outline-light"
-          onClick={toggleSidebar}
-          className="me-2"
-        >
-          {isSidebarVisible ? <Icon.List size={20} /> : <Icon.X size={20} />}
-        </Button>
-        <h6 className="ms-auto" style={{ color: "white" }}>
-          {firstname} {lastname}
-        </h6>
-      </Navbar>
-
-      <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-        {/* Sidebar */}
-        <div
+        <Container
+          fluid
           style={{
-            width: isSidebarVisible ? "250px" : "0",
-            color: "white",
-            padding: isSidebarVisible ? "20px" : "0",
-            overflow: "hidden",
-            transition: "width 0.3s ease, padding 0.3s ease",
+            flex: 1,
+            padding: "20px",
+            overflowY: "auto",
+            marginTop: "56px",
           }}
-          className="bg-dark"
         >
-          {isSidebarVisible && (
-            <Nav className="flex-column">
-              <Nav.Link
-                href="/student-assistant/dashboard"
-                className="text-light"
-              >
-                <Icon.Grid className="me-2" /> Dashboard
-              </Nav.Link>
-              <Nav.Link
-                href="/student-assistant/track-time"
-                className="text-light"
-              >
-                <Icon.Stopwatch className="me-2" /> Track Time
-              </Nav.Link>
-              <Nav.Link href="apply-leave"className="text-light">
-                <Icon.FileEarmarkText className="me-2" /> Apply Leave
-              </Nav.Link>
-              <Nav.Link onClick={logout} className="text-light">
-                <Icon.BoxArrowDownRight className="me-2" /> Logout
-              </Nav.Link>
-            </Nav>
-          )}
-        </div>
+          <h2>Track Time</h2>
 
-        {/* Main Content */}
-        <Container fluid style={{ flex: 1, padding: "20px" }}>
-          <h2>Schedule</h2>
-          <Table striped bordered hover>
-            <thead className="text-center">
+          <Table>
+            <thead>
               <tr>
-                <th className="bg-light align-middle">Time</th>
-                {daysOfWeek.map((day) => (
-                  <th
-                    key={day}
-                    className={`align-middle ${
-                      isDayScheduled(day) ? "bg-success text-white" : "bg-light"
-                    }`}
-                  >
-                    {day}
-                  </th>
-                ))}
+                <td>Date</td>
+                <td>Day</td>
+                <td>Time Schedule</td>
+                <td>Time in</td>
+                <td>Time out</td>
+                <td>Approved Status</td>
+                <td>Status</td>
+                <td>Approved by</td>
               </tr>
             </thead>
-            <tbody className="text-center">
-              {timeSlots.map((time) => (
-                <tr key={time}>
-                  <td className="align-middle fw-bold">{time}</td>
-                  {daysOfWeek.map((day) => (
-                    <td
-                      key={`${day}-${time}`}
-                      style={{
-                        backgroundColor:
-                          isStartTime(day, time) || isEndTime(day, time)
-                            ? "orange"
-                            : "white",
-                      }}
-                    >
-                      {(isStartTime(day, time) || isEndTime(day, time)) && (
-                        <div className="small">
-                          {getFullNameForSchedule(day, time)}
-                        </div>
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
+            <tbody>
+              {getSaTimeIn.map((timeIn, index) => {
+                return (
+                  <tr key={index}>
+                    <td>{timeIn.formatted_date}</td>
+                    <td>{timeIn.day_name}</td>
+                    <td>{timeIn.time_schedule}</td>
+                    <td>{timeIn.time_in}</td>
+                    <td>{timeIn.time_out}</td>
+                    <td>{timeIn.approved_status}</td>
+                    <td>{timeIn.status}</td>
+                    <td>{timeIn.approved_by}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </Table>
         </Container>
@@ -213,4 +155,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default TrackTime;

@@ -1,19 +1,10 @@
 "use client";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import * as Icon from "react-bootstrap-icons";
-import {
-  Navbar,
-  Nav,
-  Container,
-  Button,
-  Table,
-  Row,
-  Col,
-  Form,
-} from "react-bootstrap";
+import { useEffect, useState, useCallback } from "react";
 import { useLogout } from "@/components/student/logout";
+import { Container, Table, Button, Spinner, Alert } from "react-bootstrap";
+import SaNavbar from "@/components/student/navbar";
 
 const TrackTime = () => {
   const [saId, setSaId] = useState(null);
@@ -21,14 +12,15 @@ const TrackTime = () => {
   const [lastname, setLastname] = useState(null);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  
+  const [hasSchedule, setHasSchedule] = useState(false);
+  const [scheduleId, setScheduleId] = useState(null); // To hold the selected duty schedule ID
+  const [errorMessage, setErrorMessage] = useState(""); // To display error messages
   const logout = useLogout();
   const router = useRouter();
 
   const [getSaDutySchedule, setGetSaDutySchedule] = useState([]);
-  const [getSaTimeInTrack, setGetSaTimeInTrack] = useState([]);
-  const [currentDaySchedule, setCurrentDaySchedule] = useState(null); // selected sa_duty_schedule
-
-  //const [timeOut, setTimeOut] = useState("");
+  const [getSaTimeIn, setGetSaTimeIn] = useState([]);
 
   useEffect(() => {
     const storedSaId = sessionStorage.getItem("saId");
@@ -48,13 +40,13 @@ const TrackTime = () => {
   useEffect(() => {
     if (saId !== null) {
       retrieveSaDutySchedule();
-      retrieveSaTimeInTrack();
+      retrieveSaTimeIn();
     }
   }, [saId]);
 
-  const toggleSidebar = () => {
-    setIsSidebarVisible(!isSidebarVisible);
-  };
+  const toggleSidebar = useCallback(() => {
+    setIsSidebarVisible((prev) => !prev);
+  }, []);
 
   const retrieveSaDutySchedule = async () => {
     const url =
@@ -70,31 +62,28 @@ const TrackTime = () => {
         operation: "displaySaDutySchedule",
       },
     });
-    const schedules = response.data;
-    setGetSaDutySchedule(schedules);
-    const currentDayName = new Date().toLocaleString("en-US", {
-      weekday: "long",
-    });
-    // const todaySchedule = schedules.find(
-    //   (schedule) => schedule.day_names === currentDayName
-    // );
 
-    // Find the schedule for today
-    const todaySchedule = schedules.find((schedule) =>
-      schedule.day_names.includes(currentDayName)
+    setGetSaDutySchedule(response.data);
+
+    // Check if the SA has a schedule for today
+    const today = new Date().toLocaleString("en-us", { weekday: "long" }); // Get today's day name
+    const scheduleToday = response.data.some((schedule) =>
+      schedule.day_names.includes(today)
     );
 
-    if (todaySchedule) {
-      setCurrentDaySchedule(todaySchedule.duty_schedule_id);
-    } else {
-      console.log("You have no schedule today");
+    setHasSchedule(scheduleToday);
+
+    if (scheduleToday) {
+      const schedule = response.data.find((schedule) =>
+        schedule.day_names.includes(today)
+      );
+      setScheduleId(schedule.duty_schedule_id); // Store the schedule ID for later
     }
   };
 
-  const retrieveSaTimeInTrack = async () => {
+  const retrieveSaTimeIn = async () => {
     const url =
       "http://localhost/nextjs/api/sa-monitoring/studentAssistant.php";
-
     const jsonData = {
       saId: saId,
     };
@@ -105,13 +94,15 @@ const TrackTime = () => {
         operation: "displaySaTimeInTrack",
       },
     });
-    setGetSaTimeInTrack(response.data);
-    //console.log("Student Assistants Time in track:", response.data);
+    setGetSaTimeIn(response.data);
+    console.log(response.data);
   };
 
   const SaTimeIn = async () => {
-    if (!currentDaySchedule) {
-      alert("No schedule today. Cannot time in.");
+    if (!hasSchedule) {
+      setErrorMessage(
+        "You don't have a schedule today, so you cannot time in."
+      );
       return;
     }
 
@@ -120,10 +111,10 @@ const TrackTime = () => {
 
     const jsonData = {
       saId: saId,
-      dutyScheduleId: currentDaySchedule,
+      dutyScheduleId: scheduleId, // Pass the selected schedule ID
     };
 
-    //console.log(jsonData);
+    console.log(jsonData);
 
     const formData = new FormData();
     formData.append("operation", "SaTimeIn");
@@ -138,27 +129,42 @@ const TrackTime = () => {
 
       if (response.data.success) {
         alert(response.data.message);
-        retrieveSaTimeInTrack();
+        retrieveSaTimeIn();
       } else {
-        alert(response.data.message);
+        setErrorMessage(response.data.message);
       }
     } catch (error) {
-      alert("Network error. Please try again.");
+      setErrorMessage("Network error. Please try again.");
     }
   };
 
   const SaTimeOut = async () => {
-    if (!currentDaySchedule) {
-      alert("No schedule today. Cannot time out.");
+    if (!hasSchedule) {
+      setErrorMessage(
+        "You don't have a schedule today, so you cannot time out."
+      );
+      return;
+    }
+
+    if (getSaTimeIn.length === 0) {
+      setErrorMessage("You haven't timed in yet.");
+      return;
+    }
+
+    const lastEntry = getSaTimeIn[getSaTimeIn.length - 1]; // Get the last time-in entry
+    const trackId = lastEntry.track_id; // Get track_id from API response
+
+    if (!trackId) {
+      setErrorMessage("Invalid tracking ID. Please try again.");
       return;
     }
 
     const url =
       "http://localhost/nextjs/api/sa-monitoring/studentAssistant.php";
-
     const jsonData = {
-      trackId: getSaTimeInTrack[0].track_id,
-      dutyScheduleId: currentDaySchedule,
+      saId: saId,
+      dutyScheduleId: scheduleId,
+      trackId: trackId, // Include trackId
     };
 
     console.log(jsonData);
@@ -176,193 +182,104 @@ const TrackTime = () => {
 
       if (response.data.success) {
         alert(response.data.message);
-        retrieveSaTimeInTrack();
+        retrieveSaTimeIn(); // Refresh the time-in data after timeout
       } else {
-        alert(response.data.message);
+        setErrorMessage(response.data.message);
       }
     } catch (error) {
-      alert("Network error. Please try again.");
+      setErrorMessage("Network error. Please try again.");
     }
   };
 
-  // const handleTimeOut = (event) => {
-  //   setTimeOut(event.target.value);
-  // };
-
-  // const convertTo24HourFormat = (time) => {
-  //   const [timePart, modifier] = time.split(" ");
-  //   let [hours, minutes] = timePart.split(":");
-  //   if (modifier === "PM" && hours !== "12") hours = parseInt(hours, 10) + 12;
-  //   if (modifier === "AM" && hours === "12") hours = "00";
-  //   return `${hours}:${minutes}`;
-  // };
-
   if (isLoading) {
-    return null;
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      </div>
+    );
   }
 
   return (
     <>
-      {/* Top Navbar */}
-      <Navbar
-        expand="lg"
-        style={{ backgroundColor: "#343a40" }}
-        className="px-3"
+      <SaNavbar
+        firstname={firstname}
+        lastname={lastname}
+        isSidebarVisible={isSidebarVisible}
+        toggleSidebar={toggleSidebar}
+        logout={logout}
+      />
+
+      <div
+        style={{
+          display: "flex",
+          height: "100vh",
+          marginLeft: isSidebarVisible ? "250px" : "0",
+          transition: "margin-left 0.3s ease",
+        }}
       >
-        <Navbar.Brand href="#" className="text-light">
-          Student Assistant
-        </Navbar.Brand>
-        <Button
-          variant="outline-light"
-          onClick={toggleSidebar}
-          className="me-2"
-        >
-          {isSidebarVisible ? <Icon.List size={20} /> : <Icon.X size={20} />}
-        </Button>
-        <h6 className="ms-auto" style={{ color: "white" }}>
-          {firstname} {lastname}
-        </h6>
-      </Navbar>
-
-      <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-        {/* Sidebar */}
-        <div
+        <Container
+          fluid
           style={{
-            width: isSidebarVisible ? "250px" : "0",
-            color: "white",
-            padding: isSidebarVisible ? "20px" : "0",
-            overflow: "hidden",
-            transition: "width 0.3s ease, padding 0.3s ease",
+            flex: 1,
+            padding: "20px",
+            overflowY: "auto",
+            marginTop: "56px",
           }}
-          className="bg-dark"
         >
-          {isSidebarVisible && (
-            <Nav className="flex-column">
-              <Nav.Link
-                href="/student-assistant/dashboard"
-                className="text-light"
-              >
-                <Icon.Grid className="me-2" /> Dashboard
-              </Nav.Link>
-              <Nav.Link
-                href="/student-assistant/track-time"
-                className="text-light"
-              >
-                <Icon.Stopwatch className="me-2" /> Track Time
-              </Nav.Link>
-              <Nav.Link href="apply-leave" className="text-light">
-                <Icon.FileEarmarkText className="me-2" /> Apply Leave
-              </Nav.Link>
-              <Nav.Link onClick={logout} className="text-light">
-                <Icon.BoxArrowDownRight className="me-2" /> Logout
-              </Nav.Link>
-            </Nav>
-          )}
-        </div>
+          <h2>Track Time</h2>
 
-        {/* Main Content */}
-        <Container fluid style={{ flex: 1, padding: "20px" }}>
-          <h2>Time Track</h2>
-          <Row className="mb-3">
-            <Col className="d-flex justify-content-between">
-              <Button
-                variant="primary"
-                onClick={SaTimeIn}
-                disabled={!currentDaySchedule}
-              >
-                Time in
-              </Button>
+          {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
 
-              <Button
-                variant="secondary"
-                onClick={SaTimeOut}
-                disabled={!currentDaySchedule}
-              >
-                Time out
-              </Button>
-            </Col>
-            {/* <Form.Group controlId="endTime" className="mt-3">
-              <Form.Label>End Time</Form.Label>
-              <Form.Control
-                type="time"
-                value={}
-                onChange={}
-              />
-            </Form.Group> */}
-          </Row>
+          <Button
+            variant="success"
+            className="fw-bold px-4 py-2 me-3 rounded-pill shadow"
+            onClick={SaTimeIn}
+            disabled={!hasSchedule}
+          >
+            {hasSchedule ? "Time In" : "No Schedule Today"}
+          </Button>
 
-          <Table striped bordered hover responsive className="table-custom">
-            <thead className="table-primary">
+          <Button
+            variant="danger"
+            className="fw-bold px-4 py-2 rounded-pill shadow"
+            onClick={SaTimeOut}
+            disabled={!hasSchedule}
+          >
+            {hasSchedule ? "Time Out" : "No Schedule Today"}
+          </Button>
+
+          <Table striped bordered hover responsive className="table-dark mt-4">
+            <thead className="bg-primary text-white">
               <tr>
-                <th>Date</th>
-                <th>Day Schedule</th>
-                <th>Time Schedule</th>
-                <th>Time-in</th>
-                <th>Time-out</th>
-                <th>Approved Status</th>
-                <th>Status</th>
-                <th>Approved By</th>
+                <th className="fw-bold text-center">Date</th>
+                <th className="fw-bold text-center">Day</th>
+                <th className="fw-bold text-center">Time Schedule</th>
+                <th className="fw-bold text-center">Time In</th>
+                <th className="fw-bold text-center">Time Out</th>
+                <th className="fw-bold text-center">Approved Status</th>
+                <th className="fw-bold text-center">Status</th>
+                <th className="fw-bold text-center">Approved By</th>
               </tr>
             </thead>
-            <tbody>
-              {getSaTimeInTrack.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan="9"
-                    className="text-center"
-                    style={{
-                      color: "red",
-                      fontWeight: "bold",
-                      backgroundColor: "#f8d7da",
-                    }}
-                  >
-                    No data available, please wait...
+            <tbody className="table-light">
+              {getSaTimeIn.map((timeIn, index) => (
+                <tr key={index}>
+                  <td className="text-center">{timeIn.formatted_date}</td>
+                  <td className="text-center">{timeIn.day_name}</td>
+                  <td className="text-center">{timeIn.time_schedule}</td>
+                  <td className="text-center text-success fw-bold">
+                    {timeIn.time_in}
                   </td>
+                  <td className="text-center text-danger fw-bold">
+                    {timeIn.time_out}
+                  </td>
+                  <td className="text-center">{timeIn.approved_status}</td>
+                  <td className="text-center">{timeIn.status}</td>
+                  <td className="text-center">{timeIn.approved_by}</td>
                 </tr>
-              ) : (
-                getSaTimeInTrack.map((timeIn, index) => (
-                  <tr key={index}>
-                    <td>{timeIn.formatted_date}</td>
-                    <td>{timeIn.day_name}</td>
-                    <td>{timeIn.time_schedule}</td>
-                    <td>{timeIn.time_in}</td>
-                    <td>{timeIn.time_out}</td>
-                    <td>
-                      <span
-                        className={`badge ${
-                          timeIn.approved_status === "Approved"
-                            ? "bg-success"
-                            : timeIn.approved_status === "Pending"
-                            ? "bg-warning text-dark"
-                            : "bg-danger"
-                        }`}
-                      >
-                        {timeIn.approved_status}
-                      </span>
-                    </td>
-                    <td>
-                      <span
-                        className={`badge ${
-                          timeIn.status === "On Time"
-                            ? "bg-success"
-                            : timeIn.status === "Late"
-                            ? "bg-danger"
-                            : "bg-secondary"
-                        }`}
-                      >
-                        {timeIn.status}
-                      </span>
-                    </td>
-                    <td>
-                      {timeIn.admin_fullname?.trim() || (
-                        <span style={{ color: "gray", fontStyle: "italic" }}>
-                          waiting to be approved...
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
+              ))}
             </tbody>
           </Table>
         </Container>
