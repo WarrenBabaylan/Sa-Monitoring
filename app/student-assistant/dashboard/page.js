@@ -38,6 +38,17 @@ const Dashboard = () => {
     }
   }, [saId]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSidebarVisible(window.innerWidth >= 768);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   const toggleSidebar = useCallback(() => {
     setIsSidebarVisible((prev) => !prev);
   }, []);

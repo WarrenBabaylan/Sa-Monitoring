@@ -2,12 +2,9 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import * as Icon from "react-bootstrap-icons";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import {
-  Navbar,
-  Nav,
   Button,
   Container,
   Form,
@@ -15,9 +12,12 @@ import {
   Col,
   Modal,
   Table,
+  Spinner,
 } from "react-bootstrap";
 import { useLogout } from "@/components/student/logout";
 import { retrieveLeaveRequest } from "@/components/student/retrieveLeaveRequests";
+import SaNavbar from "@/components/student/navbar";
+import ReusableModal from "@/components/modal";
 
 const Leave = () => {
   const [saId, setSaId] = useState(null);
@@ -56,6 +56,17 @@ const Leave = () => {
       retrieveLeaveRequest(saId, selectedDate, setGetSaLeaveRequests);
     }
   }, [saId, selectedDate]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSidebarVisible(window.innerWidth >= 768);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const toggleSidebar = () => {
     setIsSidebarVisible(!isSidebarVisible);
@@ -114,73 +125,42 @@ const Leave = () => {
   };
 
   if (isLoading) {
-    return null;
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      </div>
+    );
   }
 
   return (
     <>
-      {/* Top Navbar */}
-      <Navbar
-        expand="lg"
+      <SaNavbar
+        firstname={firstname}
+        lastname={lastname}
+        isSidebarVisible={isSidebarVisible}
+        toggleSidebar={toggleSidebar}
+        logout={logout}
+      />
+
+      <div
         style={{
-          backgroundColor: "#343a40",
-          borderBottom: "2px solid #495057",
+          display: "flex",
+          height: "100vh",
+          marginLeft: isSidebarVisible ? "250px" : "0",
+          transition: "margin-left 0.3s ease",
         }}
-        className="px-3"
       >
-        <Navbar.Brand href="#" className="text-light">
-          Student Assistant
-        </Navbar.Brand>
-        <Button
-          variant="outline-light"
-          onClick={toggleSidebar}
-          className="me-2"
-        >
-          {isSidebarVisible ? <Icon.List size={20} /> : <Icon.X size={20} />}
-        </Button>
-        <h6 className="ms-auto text-light">
-          {firstname} {lastname}
-        </h6>
-      </Navbar>
-
-      <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-        {/* Sidebar */}
-        <div
+        <Container
+          fluid
           style={{
-            width: isSidebarVisible ? "250px" : "0",
-            color: "white",
-            padding: isSidebarVisible ? "20px" : "0",
-            overflow: "hidden",
-            transition: "width 0.3s ease, padding 0.3s ease",
+            flex: 1,
+            padding: "20px",
+            overflowY: "auto",
+            marginTop: "56px",
           }}
-          className="bg-dark"
         >
-          {isSidebarVisible && (
-            <Nav className="flex-column">
-              <Nav.Link
-                href="/student-assistant/dashboard"
-                className="text-light"
-              >
-                <Icon.Grid className="me-2" /> Dashboard
-              </Nav.Link>
-              <Nav.Link
-                href="/student-assistant/track-time"
-                className="text-light"
-              >
-                <Icon.Stopwatch className="me-2" /> Track Time
-              </Nav.Link>
-              <Nav.Link href="apply-leave" className="text-light">
-                <Icon.FileEarmarkText className="me-2" /> Apply Leave
-              </Nav.Link>
-              <Nav.Link onClick={logout} className="text-light">
-                <Icon.BoxArrowDownRight className="me-2" /> Logout
-              </Nav.Link>
-            </Nav>
-          )}
-        </div>
-
-        {/* Main Content */}
-        <Container fluid style={{ flex: 1, padding: "20px" }}>
           <h2 className="mb-3">Apply Leave</h2>
 
           <div className="d-flex justify-content-end mb-4">

@@ -2,7 +2,7 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Container, Button, Modal, Card, Badge } from "react-bootstrap";
+import { Container, Button, Modal, Card, Badge, Spinner } from "react-bootstrap";
 import * as Icon from "react-bootstrap-icons";
 import FormField from "@/components/form";
 
@@ -51,8 +51,8 @@ const AssignSchedule = () => {
   };
 
   const retrieveDays = async () => {
-    //const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
-    const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
+    const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+    //const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
 
     const response = await axios.get(url, {
       params: {
@@ -64,8 +64,8 @@ const AssignSchedule = () => {
   };
 
   const retrieveDutyHours = async () => {
-    //const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
-    const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
+    const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+    //const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
 
     const response = await axios.get(url, {
       params: {
@@ -149,7 +149,13 @@ const AssignSchedule = () => {
   };
 
   if (isLoading) {
-    return null;
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      </div>
+    );
   }
 
   return (

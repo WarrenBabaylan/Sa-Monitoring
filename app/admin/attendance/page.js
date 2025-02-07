@@ -74,8 +74,8 @@ const Attendance = () => {
   const [filterStatus, setFilterStatus] = useState("All"); // Default to show all records
 
   const retrieveAllSaTimeInTrack = async () => {
-    //const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
-    const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
+    const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+    //const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
 
     const response = await axios.get(url, {
       params: {
@@ -88,8 +88,8 @@ const Attendance = () => {
   };
 
   const retrieveAllSaTimeInTrackById = async (timeInId) => {
-    //const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
-    const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
+    const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+    //const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
 
     const jsonData = {
       timeInId: timeInId,

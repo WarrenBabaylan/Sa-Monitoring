@@ -67,8 +67,8 @@ const LeaveApproval = () => {
   const handleShowModal = () => setShowApprovedModal(true);
 
   const retrieveSaLeaveRequests = async () => {
-    //const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
-    const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
+    const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+    //const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
 
     const response = await axios.get(url, {
       params: {
@@ -81,8 +81,8 @@ const LeaveApproval = () => {
   };
 
   const retrieveSaLeaveRequestsById = async (leaveId) => {
-    //const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
-    const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
+    const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+    //const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
 
     const jsondata = {
       leaveId: leaveId,

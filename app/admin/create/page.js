@@ -93,8 +93,8 @@ const Create = () => {
   };
 
   const retrieveAllSa = async () => {
-    //const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
-    const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
+    const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+    //const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
 
     const response = await axios.get(url, {
       params: {
@@ -106,8 +106,8 @@ const Create = () => {
   };
 
   const retrieveSaById = async (saId) => {
-    //const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
-    const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
+    const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+    //const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
 
     const jsonData = {
       saId: saId,

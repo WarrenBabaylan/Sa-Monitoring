@@ -12,7 +12,7 @@ const TrackTime = () => {
   const [lastname, setLastname] = useState(null);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const [hasSchedule, setHasSchedule] = useState(false);
   const [scheduleId, setScheduleId] = useState(null); // To hold the selected duty schedule ID
   const [errorMessage, setErrorMessage] = useState(""); // To display error messages
@@ -43,6 +43,17 @@ const TrackTime = () => {
       retrieveSaTimeIn();
     }
   }, [saId]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSidebarVisible(window.innerWidth >= 768);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const toggleSidebar = useCallback(() => {
     setIsSidebarVisible((prev) => !prev);
@@ -275,8 +286,32 @@ const TrackTime = () => {
                   <td className="text-center text-danger fw-bold">
                     {timeIn.time_out}
                   </td>
-                  <td className="text-center">{timeIn.approved_status}</td>
-                  <td className="text-center">{timeIn.status}</td>
+                  <td className="text-center">
+                    <span
+                      className={`badge ${
+                        timeIn.approved_status === "Approved"
+                          ? "bg-success"
+                          : timeIn.approved_status === "Pending"
+                          ? "bg-warning text-dark"
+                          : "bg-danger"
+                      }`}
+                    >
+                      {timeIn.approved_status}
+                    </span>
+                  </td>
+                  <td className="text-center">
+                    <span
+                      className={`badge ${
+                        timeIn.status === "On Time"
+                          ? "bg-success"
+                          : timeIn.status === "Late"
+                          ? "bg-danger"
+                          : "bg-secondary"
+                      }`}
+                    >
+                      {timeIn.status}
+                    </span>
+                  </td>
                   <td className="text-center">{timeIn.approved_by}</td>
                 </tr>
               ))}
