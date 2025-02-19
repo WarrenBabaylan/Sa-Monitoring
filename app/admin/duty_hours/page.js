@@ -58,6 +58,7 @@ const DutyHours = () => {
 
     const jsonData = {
       requiedDutyHours: hours,
+      adminId: adminId,
     };
 
     console.log(jsonData);

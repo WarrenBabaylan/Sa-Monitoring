@@ -28,18 +28,17 @@ const Create = () => {
 
   useEffect(() => {
     const storedAdminId = sessionStorage.getItem("adminId");
-    const storedFirstname = sessionStorage.getItem("firstname");
-    const storedLastname = sessionStorage.getItem("lastname");
 
     if (!storedAdminId) {
       router.push("/");
-    } else {
-      setAdminId(storedAdminId);
-      setAdminFirstname(storedFirstname);
-      setAdminLastname(storedLastname);
-      setIsLoading(false);
+      return;
     }
-  }, [router]);
+
+    setAdminId(storedAdminId);
+    setAdminFirstname(sessionStorage.getItem("firstname"));
+    setAdminLastname(sessionStorage.getItem("lastname"));
+    setIsLoading(false);
+  }, []);
 
   useEffect(() => {
     if (adminId !== null) {
@@ -73,9 +72,10 @@ const Create = () => {
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
 
-  //--------------- Create new Sa Account -----------------//
+  //--------------- Create new Sa Account ----------------//
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
+  const [studentId, setStudentId] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -94,43 +94,61 @@ const Create = () => {
 
   const retrieveAllSa = async () => {
     const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
-    //const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
 
-    const response = await axios.get(url, {
-      params: {
-        json: JSON.stringify({}),
-        operation: "displayAllSa",
-      },
-    });
-    setGetAllSa(response.data);
+    setLoading(true);
+    try {
+      const response = await axios.get(url, {
+        params: {
+          json: JSON.stringify({}),
+          operation: "displayAllSa",
+        },
+      });
+      setGetAllSa(response.data);
+    } catch (error) {
+      setGetAllSa(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const retrieveSaById = async (saId) => {
     const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
-    //const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
 
     const jsonData = {
       saId: saId,
     };
 
-    const response = await axios.get(url, {
-      params: {
-        json: JSON.stringify(jsonData),
-        operation: "displayAllSa",
-      },
-    });
-    setGetSaById(response.data);
-    const student = response.data[0];
-    setSaId(student.sa_id);
+    try {
+      const response = await axios.get(url, {
+        params: {
+          json: JSON.stringify(jsonData),
+          operation: "displayAllSa",
+        },
+      });
+      if (!response.data || response.data.length === 0) {
+        showAlert("danger", "Student Assistant not found.");
+        return false;
+      }
+
+      const student = response.data[0];
+      setGetSaById(response.data);
+      setSaId(student.sa_id);
+      return true;
+    } catch (error) {
+      showAlert("danger", "Error retrieving student assistant data.");
+      return false;
+    }
   };
 
-  const showAssignSched = (saId) => {
-    retrieveSaById(saId);
-    router.push(`/admin/create/assign?saId=${saId}`);
+  const showAssignSched = async (saId) => {
+    const found = await retrieveSaById(saId);
+    if (found) {
+      router.push(`/admin/create/assign?saId=${saId}`);
+    }
   };
 
   const submit = async () => {
-    if (!firstname && !lastname && !username) {
+    if (!firstname && !lastname && !studentId) {
       showAlert("danger", "Please fill up all fields!");
       return;
     } else if (!firstname) {
@@ -139,20 +157,25 @@ const Create = () => {
     } else if (!lastname) {
       showAlert("warning", "Lastname is required!");
       return;
-    } else if (!username) {
-      showAlert("warning", "Username is required!");
+    } else if (!studentId) {
+      showAlert("warning", "Student Id is required!");
       return;
     }
 
     const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
 
     setPassword(lastname);
+    setUsername(studentId);
     const jsonData = {
       firstname: firstname,
       lastname: lastname,
-      username: username,
+      studentId: studentId,
+      username: studentId,
       password: lastname.toLowerCase(),
+      adminId: adminId,
     };
+
+    console.log(jsonData);
 
     const formData = new FormData();
     formData.append("operation", "createSaAccount");
@@ -170,6 +193,7 @@ const Create = () => {
         showAlert("success", "Account created successfully!");
         setFirstname("");
         setLastname("");
+        setStudentId("");
         setUsername("");
         setPassword("");
         retrieveAllSa();
@@ -185,8 +209,10 @@ const Create = () => {
     }
   };
 
-  const filteredSa = getAllSa.filter((sa) =>
-    sa.sa_fullname.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredSa = (Array.isArray(getAllSa) ? getAllSa : []).filter(
+    (sa) =>
+      sa.sa_fullname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      sa.student_id.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (isLoading) {
@@ -275,7 +301,7 @@ const Create = () => {
 
           <Card className="shadow rounded-3 mt-4">
             <Card.Header className="bg-primary text-white">
-              <h5 className="mb-0">Student Assistant Schedule</h5>
+              <h5>Student Assistant Schedule</h5>
             </Card.Header>
             <Card.Body>
               <Form.Control
@@ -284,9 +310,17 @@ const Create = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="mb-3"
               />
-              <Table responsive striped bordered hover className="mb-0">
-                <thead className="bg-light">
+              <Table
+                responsive
+                striped
+                bordered
+                hover
+                className="mb-0 text-center"
+                style={{ borderRadius: "8px", overflow: "hidden" }}
+              >
+                <thead className="bg-dark text-white">
                   <tr>
+                    <th>Student ID</th>
                     <th>Student Assistant</th>
                     <th>Day Schedule</th>
                     <th>Time Schedule</th>
@@ -295,24 +329,56 @@ const Create = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredSa.map((sa, index) => (
-                    <tr key={index}>
-                      <td>{sa.sa_fullname}</td>
-                      <td>{sa.day_names}</td>
-                      <td>{sa.time_schedule}</td>
-                      <td>{sa.required_duty_hours}</td>
-                      <td>
-                        <Button
-                          variant="success"
-                          size="sm"
-                          className="px-3"
-                          onClick={() => showAssignSched(sa.sa_id)}
-                        >
-                          Assign
-                        </Button>
+                  {loading ? (
+                    <tr>
+                      <td colSpan="6" className="text-center text-muted">
+                        Loading data, please wait...
                       </td>
                     </tr>
-                  ))}
+                  ) : !Array.isArray(getAllSa) ? (
+                    <tr>
+                      <td
+                        colSpan="6"
+                        className="text-center text-danger fw-bold"
+                      >
+                        No data available. Please wait or check your connection.
+                      </td>
+                    </tr>
+                  ) : filteredSa.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="text-center text-muted">
+                        No student assistants available.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredSa.map((sa, index) => (
+                      <tr
+                        key={index}
+                        style={{ transition: "0.3s", cursor: "pointer" }}
+                        className="table-hover"
+                      >
+                        <td style={{ padding: "12px" }}>{sa.student_id}</td>
+                        <td style={{ padding: "12px" }}>{sa.sa_fullname}</td>
+                        <td>{sa.day_names}</td>
+                        <td>{sa.time_schedule}</td>
+                        <td>{sa.required_duty_hours}</td>
+                        <td>
+                          <Button
+                            variant="success"
+                            size="sm"
+                            className="px-3 d-flex align-items-center"
+                            onClick={() => showAssignSched(sa.sa_id)}
+                          >
+                            <i
+                              className="bi bi-calendar-check"
+                              style={{ marginRight: "5px" }}
+                            ></i>
+                            Assign
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </Table>
             </Card.Body>
@@ -356,20 +422,27 @@ const Create = () => {
               />
 
               <FormField
+                label={"Student ID"}
+                type={"text"}
+                placeholder={"enter student id..."}
+                value={studentId}
+                onChange={(e) => {
+                  setStudentId(e.target.value);
+                }}
+              />
+
+              <FormField
                 label={"Username"}
                 type={"text"}
-                placeholder={"enter username..."}
                 value={username}
-                onChange={(e) => {
-                  setUsername(e.target.value);
-                }}
+                readOnly={true}
               />
 
               <FormField
                 label={"Password"}
                 type={"text"}
                 value={password}
-                disabled={true}
+                readOnly={true}
               />
             </Form>
           </>

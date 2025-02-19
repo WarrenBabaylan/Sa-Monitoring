@@ -10,6 +10,7 @@ const FormField = ({
   children,
   className,
   disabled,
+  readOnly,
   autoFocus,
   ref,
 }) => {
@@ -23,6 +24,7 @@ const FormField = ({
         value={value}
         onChange={onChange}
         disabled={disabled}
+        readOnly={readOnly}
         autoFocus={autoFocus}
         ref={ref}
         className="rounded border border-gray-200 text-black"

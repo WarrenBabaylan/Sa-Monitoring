@@ -11,6 +11,7 @@ const Logs = () => {
   const [firstname, setFirstname] = useState(null);
   const [lastname, setLastname] = useState(null);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const logout = useLogout();
   const router = useRouter();
@@ -54,16 +55,21 @@ const Logs = () => {
 
   const retrieveActivityLogs = async () => {
     const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
-    //const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
-
-    const response = await axios.get(url, {
-      params: {
-        json: JSON.stringify({}),
-        operation: "displayActivityLogs",
-      },
-    });
-    setGetLogs(response.data);
-    console.log(response.data);
+    setLoading(true);
+    try {
+      const response = await axios.get(url, {
+        params: {
+          json: JSON.stringify({}),
+          operation: "displayActivityLog",
+        },
+      });
+      setGetLogs(response.data);
+      console.log(response.data);
+    } catch (error) {
+      setGetLogs(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (isLoading) {
@@ -103,20 +109,47 @@ const Logs = () => {
             marginTop: "56px",
           }}
         >
-          <h2>Activity Logs</h2>
-
-          <Table>
-            <thead>
+          <h2 className="mb-3">Activity Logs</h2>
+          <Table striped bordered hover responsive className="shadow-sm">
+            <thead className="table-dark text-center">
               <tr>
-                <td>Logs</td>
+                <th>Activity Logs</th>
+                <th>Admin</th>
+                <th>Created at</th>
               </tr>
             </thead>
             <tbody>
-              {getLogs.map((activityLogs, index) => (
-                <tr key={index}>
-                  <td>{activityLogs.action}</td>
+              {loading ? (
+                <tr>
+                  <td colSpan="3" className="text-center text-muted">
+                    Loading data, please wait...
+                  </td>
                 </tr>
-              ))}
+              ) : !Array.isArray(getLogs) ? (
+                <tr>
+                  <td colSpan="3" className="text-center text-danger fw-bold">
+                    No data available. Please wait or check your connection.
+                  </td>
+                </tr>
+              ) : getLogs.length === 0 ? (
+                <tr>
+                  <td colSpan="3" className="text-center text-muted">
+                    No logs available.
+                  </td>
+                </tr>
+              ) : (
+                getLogs.map((activityLogs, index) => (
+                  <tr key={index} className="align-middle">
+                    <td className="text-start text-break">
+                      {activityLogs.action}
+                    </td>
+                    <td className="text-center">{activityLogs.admin_name}</td>
+                    <td className="text-center">
+                      {activityLogs.formatted_timestamp}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </Table>
         </Container>

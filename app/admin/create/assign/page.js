@@ -2,7 +2,14 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Container, Button, Modal, Card, Badge, Spinner } from "react-bootstrap";
+import {
+  Container,
+  Button,
+  Modal,
+  Card,
+  Badge,
+  Spinner,
+} from "react-bootstrap";
 import * as Icon from "react-bootstrap-icons";
 import FormField from "@/components/form";
 
@@ -10,6 +17,7 @@ const AssignSchedule = () => {
   const [adminId, setAdminId] = useState(null);
   const searchParams = useSearchParams();
   const saId = searchParams.get("saId");
+  const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -52,28 +60,40 @@ const AssignSchedule = () => {
 
   const retrieveDays = async () => {
     const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
-    //const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
 
-    const response = await axios.get(url, {
-      params: {
-        json: JSON.stringify({}),
-        operation: "displayDays",
-      },
-    });
-    setGetDays(response.data);
+    setLoading(true);
+    try {
+      const response = await axios.get(url, {
+        params: {
+          json: JSON.stringify({}),
+          operation: "displayDays",
+        },
+      });
+      setGetDays(response.data);
+    } catch (error) {
+      setGetDays([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const retrieveDutyHours = async () => {
     const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
-    //const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
 
-    const response = await axios.get(url, {
-      params: {
-        json: JSON.stringify({}),
-        operation: "displayDutyHours",
-      },
-    });
-    setGetDutyHours(response.data);
+    setLoading(true);
+    try {
+      const response = await axios.get(url, {
+        params: {
+          json: JSON.stringify({}),
+          operation: "displayDutyHours",
+        },
+      });
+      setGetDutyHours(response.data);
+    } catch (error) {
+      setGetDutyHours(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSelectionDay = (event) => {
@@ -114,6 +134,7 @@ const AssignSchedule = () => {
       startTime: convertTo24HourFormat(startTime),
       endTime: convertTo24HourFormat(endTime),
       dutyHours: dutyHours,
+      adminId: adminId,
     };
 
     console.log(jsonData);
@@ -222,11 +243,17 @@ const AssignSchedule = () => {
           onChange={handleSelectionDay}
         >
           <option value="">Select Day</option>
-          {getDays.map((day, index) => (
-            <option key={index} value={day.day_id}>
-              {day.day_name}
-            </option>
-          ))}
+          {!Array.isArray(getDays) || getDays.length === 0 ? (
+            <option disabled>No results.</option>
+          ) : (
+            <>
+              {getDays.map((day, index) => (
+                <option key={index} value={day.day_id}>
+                  {day.day_name}
+                </option>
+              ))}
+            </>
+          )}
         </FormField>
 
         {/* Display Selected Days */}
@@ -266,11 +293,15 @@ const AssignSchedule = () => {
           onChange={selectedDutyHours}
         >
           <option value="">Select Duty Hours</option>
-          {getDutyHours.map((hours, index) => (
-            <option key={index} value={hours.duty_hours_id}>
-              {hours.required_duty_hours} hours
-            </option>
-          ))}
+          {!Array.isArray(getDutyHours) || getDutyHours.length === 0 ? (
+            <option disabled>No results.</option>
+          ) : (
+            getDutyHours.map((hours, index) => (
+              <option key={index} value={hours.duty_hours_id}>
+                {hours.required_duty_hours} hours
+              </option>
+            ))
+          )}
         </FormField>
 
         <Button

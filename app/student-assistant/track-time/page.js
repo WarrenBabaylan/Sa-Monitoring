@@ -312,7 +312,7 @@ const TrackTime = () => {
                       {timeIn.status}
                     </span>
                   </td>
-                  <td className="text-center">{timeIn.approved_by}</td>
+                  <td className="text-center">{timeIn.admin_fullname}</td>
                 </tr>
               ))}
             </tbody>
