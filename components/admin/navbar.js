@@ -61,6 +61,9 @@ const AdminNavbar = ({
           <Nav.Link href="/admin/leave-approval" className="text-light">
             <Icon.Check2Circle className="me-2" /> Leave Approval
           </Nav.Link>
+          <Nav.Link href="/admin/add_admin" className="text-light">
+            <Icon.GearFill className="me-2 text-light" /> Manage Admin
+          </Nav.Link>
           <Nav.Link href="/admin/logs" className="text-light">
             <Icon.JournalText className="me-2" /> Activity Logs
           </Nav.Link>

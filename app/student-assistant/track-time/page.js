@@ -1,10 +1,11 @@
 "use client";
 import axios from "axios";
+import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
+import SaNavbar from "@/components/student/navbar";
 import { useEffect, useState, useCallback } from "react";
 import { useLogout } from "@/components/student/logout";
 import { Container, Table, Button, Spinner, Alert } from "react-bootstrap";
-import SaNavbar from "@/components/student/navbar";
 
 const TrackTime = () => {
   const [saId, setSaId] = useState(null);
@@ -111,11 +112,25 @@ const TrackTime = () => {
 
   const SaTimeIn = async () => {
     if (!hasSchedule) {
-      setErrorMessage(
-        "You don't have a schedule today, so you cannot time in."
-      );
+      Swal.fire({
+        title: "No Schedule Today",
+        text: "You don't have a schedule today, so you cannot time in.",
+        icon: "warning",
+        confirmButtonText: "OK",
+      });
       return;
     }
+
+    const result = await Swal.fire({
+      title: "Time In Confirmation",
+      text: "Are you sure you want to time in?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Time In",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!result.isConfirmed) return;
 
     const url =
       "http://localhost/nextjs/api/sa-monitoring/studentAssistant.php";
@@ -139,21 +154,24 @@ const TrackTime = () => {
       });
 
       if (response.data.success) {
-        alert(response.data.message);
+        Swal.fire("Success!", response.data.message, "success");
         retrieveSaTimeIn();
       } else {
-        setErrorMessage(response.data.message);
+        Swal.fire("Warning!", response.data.message, "warning");
       }
     } catch (error) {
-      setErrorMessage("Network error. Please try again.");
+      Swal.fire("Error", "Network error. Please try again.", "error");
     }
   };
 
   const SaTimeOut = async () => {
     if (!hasSchedule) {
-      setErrorMessage(
-        "You don't have a schedule today, so you cannot time out."
-      );
+      Swal.fire({
+        title: "No Schedule Today",
+        text: "You don't have a schedule today, so you cannot time out.",
+        icon: "warning",
+        confirmButtonText: "OK",
+      });
       return;
     }
 
@@ -169,6 +187,17 @@ const TrackTime = () => {
       setErrorMessage("Invalid tracking ID. Please try again.");
       return;
     }
+
+    const result = await Swal.fire({
+      title: "Time In Confirmation",
+      text: "Are you sure you want to time Out?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Time Out",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!result.isConfirmed) return;
 
     const url =
       "http://localhost/nextjs/api/sa-monitoring/studentAssistant.php";
@@ -192,13 +221,13 @@ const TrackTime = () => {
       });
 
       if (response.data.success) {
-        alert(response.data.message);
+        Swal.fire("Success", response.data.message, "success");
         retrieveSaTimeIn(); // Refresh the time-in data after timeout
       } else {
-        setErrorMessage(response.data.message);
+        Swal.fire("Warning", response.data.message, "warning");
       }
     } catch (error) {
-      setErrorMessage("Network error. Please try again.");
+      Swal.fire("Error!", "Network error. Please try again.", "error");
     }
   };
 
