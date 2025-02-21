@@ -1,14 +1,19 @@
 "use client";
 import axios from "axios";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Container, Card, Form, Button, Alert, Spinner } from "react-bootstrap";
 import FormField from "./form";
+import { AiOutlineReload } from "react-icons/ai";
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [num1, setNum1] = useState(0);
+  const [num2, setNum2] = useState(0);
+  const [captchaAnswer, setCaptchaAnswer] = useState("");
+  const [userCaptcha, setUserCaptcha] = useState("");
   const router = useRouter();
 
   const [alertShow, setAlertShow] = useState({
@@ -17,14 +22,27 @@ const Login = () => {
     message: "",
   });
 
-  const usernameRef = useRef(null);
-  const passwordRef = useRef(null);
-
   const showAlert = (variant, message) => {
     setAlertShow({ show: true, variant, message });
     setTimeout(() => {
       setAlertShow((prev) => ({ ...prev, show: false }));
     }, 5000);
+  };
+
+  const usernameRef = useRef(null);
+  const passwordRef = useRef(null);
+
+  useEffect(() => {
+    generateCaptcha();
+  }, []);
+
+  const generateCaptcha = () => {
+    const n1 = Math.floor(Math.random() * 50) + 1;
+    const n2 = Math.floor(Math.random() * 50) + 1;
+    setNum1(n1);
+    setNum2(n2);
+    setCaptchaAnswer(n1 + n2);
+    setUserCaptcha("");
   };
 
   const login = async () => {
@@ -39,8 +57,16 @@ const Login = () => {
       return;
     }
 
+    if (!userCaptcha) {
+      showAlert("danger", "CAPTCHA is required");
+      return;
+    }
+
+    if (parseInt(userCaptcha) !== captchaAnswer) {
+      return;
+    }
+
     const url = "http://localhost/nextjs/api/sa-monitoring/login.php";
-    //const url = "http://192.168.1.48/nextjs/api/sa-monitoring/login.php";
 
     const jsonData = {
       username: username,
@@ -137,6 +163,54 @@ const Login = () => {
               }}
               ref={passwordRef}
             />
+
+            <div className="d-flex align-items-center justify-content-between my-2">
+              <input
+                type="text"
+                className="form-control text-center"
+                value={num1}
+                readOnly
+              />
+              <span className="mx-2">+</span>
+              <input
+                type="text"
+                className="form-control text-center"
+                value={num2}
+                readOnly
+              />
+              <span className="mx-2">=</span>
+              <input
+                type="text"
+                className={`form-control text-center ${
+                  userCaptcha && parseInt(userCaptcha) !== captchaAnswer
+                    ? "border border-danger text-danger"
+                    : userCaptcha && parseInt(userCaptcha) === captchaAnswer
+                    ? "border border-success text-success"
+                    : ""
+                }`}
+                value={userCaptcha}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (/^\d*$/.test(value)) {
+                    setUserCaptcha(value);
+                  }
+                }}
+              />
+
+              <Button
+                variant="light"
+                onClick={generateCaptcha}
+                className="ms-2"
+              >
+                <AiOutlineReload />
+              </Button>
+            </div>
+
+            {userCaptcha && parseInt(userCaptcha) !== captchaAnswer && (
+              <div className="text-danger text-start mt-1">
+                Please fill correct value
+              </div>
+            )}
 
             <Button
               variant="primary"
