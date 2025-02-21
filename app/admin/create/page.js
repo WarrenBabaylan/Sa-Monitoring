@@ -175,8 +175,6 @@ const Create = () => {
       adminId: adminId,
     };
 
-    console.log(jsonData);
-
     const formData = new FormData();
     formData.append("operation", "createSaAccount");
     formData.append("json", JSON.stringify(jsonData));
@@ -347,7 +345,7 @@ const Create = () => {
                   ) : filteredSa.length === 0 ? (
                     <tr>
                       <td colSpan="6" className="text-center text-muted">
-                        No student assistants available.
+                        no student assistants exists.
                       </td>
                     </tr>
                   ) : (
