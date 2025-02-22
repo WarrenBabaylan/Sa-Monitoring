@@ -12,6 +12,7 @@ const LeaveApproval = () => {
   const [firstname, setFirstname] = useState(null);
   const [lastname, setLastname] = useState(null);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const logout = useLogout();
   const router = useRouter();
@@ -34,6 +35,7 @@ const LeaveApproval = () => {
   useEffect(() => {
     if (adminId !== null) {
       retrieveSaLeaveRequests();
+      retrieveApprovedStatus();
     }
   }, [adminId]);
 
@@ -54,35 +56,58 @@ const LeaveApproval = () => {
 
   const [getSaLeaveRequests, setGetSaLeaveRequests] = useState([]);
   const [getSaLeaveRequestsById, setGetSaLeaveRequestsById] = useState([]);
+  const [getApprovedStatus, setGetApprovedStatus] = useState([]);
 
   const [saFullname, setSaFullname] = useState("");
   const [date, setDate] = useState("");
   const [leaveType, setLeaveType] = useState("");
   const [reason, setReason] = useState("");
-  const [approvedStatus, setApprovedStatus] = useState("Approved");
+
+  const [approvedStatus, setApprovedStatus] = useState("");
 
   //--------------- Modal ---------------//
   const [showApprovedModal, setShowApprovedModal] = useState(false);
   const handleCloseModal = () => setShowApprovedModal(false);
   const handleShowModal = () => setShowApprovedModal(true);
 
-  const retrieveSaLeaveRequests = async () => {
+  const retrieveApprovedStatus = async () => {
     const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
-    //const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
 
     const response = await axios.get(url, {
       params: {
         json: JSON.stringify({}),
-        operation: "displaySaLeaveRequest",
+        operation: "displayApprovedStatus",
       },
     });
-    setGetSaLeaveRequests(response.data);
+    setGetApprovedStatus(response.data);
     console.log(response.data);
+  };
+
+  const selectedApprovedStatus = (event) => {
+    setApprovedStatus(event.target.value);
+  };
+
+  const retrieveSaLeaveRequests = async () => {
+    const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+
+    setLoading(true);
+    try {
+      const response = await axios.get(url, {
+        params: {
+          json: JSON.stringify({}),
+          operation: "displaySaLeaveRequest",
+        },
+      });
+      setGetSaLeaveRequests(response.data);
+    } catch (error) {
+      setGetSaLeaveRequests(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const retrieveSaLeaveRequestsById = async (leaveId) => {
     const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
-    //const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
 
     const jsondata = {
       leaveId: leaveId,
@@ -91,7 +116,7 @@ const LeaveApproval = () => {
     const response = await axios.get(url, {
       params: {
         json: JSON.stringify(jsondata),
-        operation: "displaySaLeaveRequestById",
+        operation: "displaySaLeaveRequest",
       },
     });
     setGetSaLeaveRequestsById(response.data);
@@ -178,55 +203,93 @@ const LeaveApproval = () => {
         >
           <h2>Leave request Approval</h2>
 
-          <Table>
-            <thead>
+          <Table
+            responsive
+            striped
+            bordered
+            hover
+            className="mb-0 text-center"
+            style={{ borderRadius: "8px", overflow: "hidden" }}
+          >
+            <thead className="bg-dark text-white">
               <tr>
-                <td>Student Assistant</td>
-                <td>Date</td>
-                <td>Leave Type</td>
-                <td>Approved Status</td>
-                <td>Approved By</td>
-                <td>Action</td>
+                <th>Date</th>
+                <th>Student Assistant</th>
+                <th>Leave Type</th>
+                <th>Reason</th>
+                <th>Approved Status</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              {getSaLeaveRequests.map((saLeaveRequest, index) => (
-                <tr key={index}>
-                  <td>{saLeaveRequest.sa_fullname}</td>
-                  <td>{saLeaveRequest.formatted_date}</td>
-                  <td>{saLeaveRequest.leave_type}</td>
-                  <td>
-                    <span
-                      className={`badge ${
-                        saLeaveRequest.approved_status === "Approved"
-                          ? "bg-success"
-                          : saLeaveRequest.approved_status === "Pending"
-                          ? "bg-warning text-dark"
-                          : "bg-danger"
-                      }`}
-                    >
-                      {saLeaveRequest.approved_status}
-                    </span>
-                  </td>
-                  <td>
-                    {saLeaveRequest.admin_fullname?.trim() || (
-                      <span style={{ color: "gray", fontStyle: "italic" }}>
-                        waiting to be approved...
-                      </span>
-                    )}
-                  </td>
-                  <td>
-                    <Button
-                      variant="secondary"
-                      onClick={() => {
-                        showModal(saLeaveRequest.leave_id);
-                      }}
-                    >
-                      Approve
-                    </Button>
+              {loading ? (
+                <tr>
+                  <td colSpan="6" className="text-center text-muted">
+                    Loading data, please wait...
                   </td>
                 </tr>
-              ))}
+              ) : !Array.isArray(getSaLeaveRequests) ? (
+                <tr>
+                  <td colSpan="6" className="text-center text-danger fw-bold">
+                    No data available. Please wait or check your connection.
+                  </td>
+                </tr>
+              ) : getSaLeaveRequests.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="text-center text-muted">
+                    No leave requests available.
+                  </td>
+                </tr>
+              ) : (
+                getSaLeaveRequests.map((saLeaveRequest, index) => (
+                  <tr
+                    key={index}
+                    style={{ transition: "0.3s", cursor: "pointer" }}
+                    className="table-hover"
+                  >
+                    <td style={{ padding: "12px" }}>
+                      {saLeaveRequest.formatted_date}
+                    </td>
+                    <td>{saLeaveRequest.sa_fullname}</td>
+                    <td>{saLeaveRequest.leave_type}</td>
+                    <td>
+                      <textarea
+                        className="form-control"
+                        rows="2"
+                        readOnly
+                        value={saLeaveRequest.reason}
+                      ></textarea>
+                    </td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          saLeaveRequest.approved_status_name === "Approved"
+                            ? "bg-success"
+                            : saLeaveRequest.approved_status_name === "Pending"
+                            ? "bg-warning text-dark"
+                            : "bg-danger"
+                        }`}
+                      >
+                        {saLeaveRequest.approved_status_name}
+                      </span>
+                    </td>
+                    <td>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        className="px-3 d-flex align-items-center"
+                        onClick={() => showModal(saLeaveRequest.leave_id)}
+                      >
+                        <i
+                          className="bi bi-check-circle"
+                          style={{ marginRight: "5px" }}
+                        ></i>
+                        Approve
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </Table>
         </Container>
@@ -242,12 +305,12 @@ const LeaveApproval = () => {
             <Table>
               <tbody>
                 <tr>
-                  <td>Student Assistant</td>
-                  <td>{saFullname}</td>
-                </tr>
-                <tr>
                   <td>Date</td>
                   <td>{date}</td>
+                </tr>
+                <tr>
+                  <td>Student Assistant</td>
+                  <td>{saFullname}</td>
                 </tr>
                 <tr>
                   <td>Leave Type</td>
@@ -274,12 +337,20 @@ const LeaveApproval = () => {
                   <td>
                     <Form.Select
                       value={approvedStatus}
-                      onChange={(e) => setApprovedStatus(e.target.value)}
+                      onChange={selectedApprovedStatus}
                       className="mb-3"
                     >
-                      <option value="Pending">Pending</option>
-                      <option value="Approved">Approved</option>
-                      <option value="Rejected">Rejected</option>
+                      <option value="">Select Approve Status</option>
+                      {getApprovedStatus.map((approvedStatus, index) => {
+                        return (
+                          <option
+                            key={index}
+                            value={approvedStatus.approved_status_id}
+                          >
+                            {approvedStatus.approved_status_name}
+                          </option>
+                        );
+                      })}
                     </Form.Select>
                   </td>
                 </tr>

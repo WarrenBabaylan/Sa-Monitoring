@@ -110,30 +110,37 @@ const Logs = () => {
           }}
         >
           <h2 className="mb-3">Activity Logs</h2>
-          <Table striped bordered hover responsive className="shadow-sm">
-            <thead className="table-dark text-center">
+          <Table
+            responsive
+            striped
+            bordered
+            hover
+            className="mb-0 text-center"
+            style={{ borderRadius: "8px", overflow: "hidden" }}
+          >
+            <thead className="bg-dark text-white">
               <tr>
                 <th>Activity Logs</th>
                 <th>Admin</th>
-                <th>Created at</th>
+                <th>Created At</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="3" className="text-center text-muted">
+                  <td colSpan="4" className="text-center text-muted">
                     Loading data, please wait...
                   </td>
                 </tr>
               ) : !Array.isArray(getLogs) ? (
                 <tr>
-                  <td colSpan="3" className="text-center text-danger fw-bold">
+                  <td colSpan="4" className="text-center text-danger fw-bold">
                     No data available. Please wait or check your connection.
                   </td>
                 </tr>
               ) : getLogs.length === 0 ? (
                 <tr>
-                  <td colSpan="3" className="text-center text-muted">
+                  <td colSpan="4" className="text-center text-muted">
                     No logs available.
                   </td>
                 </tr>

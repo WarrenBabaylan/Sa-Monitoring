@@ -307,22 +307,18 @@ const Leave = () => {
                     <td>
                       <span
                         className={`badge ${
-                          saLeaveRequest.approved_status === "Approved"
+                          saLeaveRequest.approved_status_name === "Approved"
                             ? "bg-success"
-                            : saLeaveRequest.approved_status === "Pending"
+                            : saLeaveRequest.approved_status_name === "Pending"
                             ? "bg-warning text-dark"
                             : "bg-danger"
                         }`}
                       >
-                        {saLeaveRequest.approved_status}
+                        {saLeaveRequest.approved_status_name}
                       </span>
                     </td>
-                    <td>
-                      {saLeaveRequest.admin_fullname?.trim() || (
-                        <span style={{ color: "gray", fontStyle: "italic" }}>
-                          waiting to be approved...
-                        </span>
-                      )}
+                    <td className="text-center text-secondary">
+                      <em>{saLeaveRequest.admin_fullname}</em>
                     </td>
                   </tr>
                 ))

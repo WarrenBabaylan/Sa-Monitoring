@@ -315,33 +315,33 @@ const TrackTime = () => {
                   <td className="text-center text-danger fw-bold">
                     {timeIn.time_out}
                   </td>
-                  <td className="text-center">
+                  <td>
                     <span
                       className={`badge ${
-                        timeIn.approved_status === "Approved"
+                        timeIn.approved_status_name === "Approved"
                           ? "bg-success"
-                          : timeIn.approved_status === "Pending"
+                          : timeIn.approved_status_name === "Pending"
                           ? "bg-warning text-dark"
                           : "bg-danger"
                       }`}
                     >
-                      {timeIn.approved_status}
+                      {timeIn.approved_status_name}
                     </span>
                   </td>
-                  <td className="text-center">
+                  <td>
                     <span
                       className={`badge ${
-                        timeIn.status === "On Time"
+                        timeIn.status_name === "Present"
                           ? "bg-success"
-                          : timeIn.status === "Late"
+                          : timeIn.status_name === "Late"
                           ? "bg-danger"
                           : "bg-secondary"
                       }`}
                     >
-                      {timeIn.status}
+                      {timeIn.status_name}
                     </span>
                   </td>
-                  <td className="text-center">{timeIn.admin_fullname}</td>
+                  <td className="text-center text-secondary"><em>{timeIn.admin_fullname}</em></td>
                 </tr>
               ))}
             </tbody>

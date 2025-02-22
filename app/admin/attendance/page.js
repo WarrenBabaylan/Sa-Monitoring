@@ -12,6 +12,7 @@ const Attendance = () => {
   const [firstname, setFirstname] = useState(null);
   const [lastname, setLastname] = useState(null);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const logout = useLogout();
   const router = useRouter();
@@ -34,6 +35,8 @@ const Attendance = () => {
   useEffect(() => {
     if (adminId !== null) {
       retrieveAllSaTimeInTrack();
+      retrieveApprovedStatus();
+      retrieveStatus();
     }
   }, [adminId]);
 
@@ -57,39 +60,78 @@ const Attendance = () => {
   const [daySched, setDaySched] = useState("");
   const [startTime, setStartTime] = useState("");
   const [time, setTime] = useState("");
-  const [status, setStatus] = useState("Present");
   const [saFullname, setSaFullname] = useState("");
-  const [approvedStatus, setApprovedStatus] = useState("Approved");
+
+  const [status, setStatus] = useState("");
+  const [approvedStatus, setApprovedStatus] = useState("");
 
   //--------------- retrieving time-in data ---------------//
   const [getAllSaTimeIn, setGetAllSaTimeIn] = useState([]);
   const [getTimeInById, setGetTimeInById] = useState([]);
+
+  const [getApprovedStatus, setGetApprovedStatus] = useState([]);
+  const [getStatus, setGetStatus] = useState([]);
 
   //--------------- Modal ---------------//
   const [showModal, setShowModal] = useState(false);
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
 
-  //--------------- Filter State ---------------//
-  const [filterStatus, setFilterStatus] = useState("All"); // Default to show all records
-
-  const retrieveAllSaTimeInTrack = async () => {
+  const retrieveApprovedStatus = async () => {
     const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
-    //const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
 
     const response = await axios.get(url, {
       params: {
         json: JSON.stringify({}),
-        operation: "displaySaTimeIn",
+        operation: "displayApprovedStatus",
       },
     });
-    setGetAllSaTimeIn(response.data);
+    setGetApprovedStatus(response.data);
     console.log(response.data);
+  };
+
+  const retrieveStatus = async () => {
+    const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+
+    const response = await axios.get(url, {
+      params: {
+        json: JSON.stringify({}),
+        operation: "displayStatus",
+      },
+    });
+    setGetStatus(response.data);
+    console.log(response.data);
+  };
+
+  const selectedApprovedStatus = (event) => {
+    setApprovedStatus(event.target.value);
+  };
+
+  const selectedStatus = (event) => {
+    setStatus(event.target.value);
+  };
+
+  const retrieveAllSaTimeInTrack = async () => {
+    const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+
+    setLoading(true);
+    try {
+      const response = await axios.get(url, {
+        params: {
+          json: JSON.stringify({}),
+          operation: "displaySaTimeIn",
+        },
+      });
+      setGetAllSaTimeIn(response.data);
+    } catch (error) {
+      setGetAllSaTimeIn(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const retrieveAllSaTimeInTrackById = async (timeInId) => {
     const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
-    //const url = "http://192.168.1.48/nextjs/api/sa-monitoring/admin.php";
 
     const jsonData = {
       timeInId: timeInId,
@@ -102,6 +144,7 @@ const Attendance = () => {
       },
     });
     setGetTimeInById(response.data);
+    console.log(response.data);
 
     const saTimeIn = response.data[0];
 
@@ -110,8 +153,6 @@ const Attendance = () => {
     setStartTime(saTimeIn.time_start);
     setTime(saTimeIn.time_in);
     setSaFullname(saTimeIn.sa_fullname);
-    setApprovedStatus("Approved");
-    setStatus(saTimeIn.status === "Absent" ? "Present" : saTimeIn.status);
   };
 
   const showApprovedModal = (timeInId) => {
@@ -141,21 +182,13 @@ const Attendance = () => {
       data: formData,
     });
 
-    if (response.data == 1) {
+    if (response.data === 1) {
       alert("Approval successful!");
       retrieveAllSaTimeInTrack();
     } else {
       alert("Approval failed! Please try again.");
     }
   };
-
-  //--------------- Filter Logic ---------------//
-  const filteredData = getAllSaTimeIn.filter((timeIn) => {
-    if (filterStatus === "All") {
-      return true;
-    }
-    return timeIn.status === filterStatus;
-  });
 
   if (isLoading) {
     return (
@@ -196,21 +229,15 @@ const Attendance = () => {
         >
           <h2>Attendance Review</h2>
 
-          {/* Filter Dropdown */}
-          <Form.Select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="mb-3"
-            style={{ width: "200px" }}
+          <Table
+            responsive
+            striped
+            bordered
+            hover
+            className="mb-0 text-center"
+            style={{ borderRadius: "8px", overflow: "hidden" }}
           >
-            <option value="All">All</option>
-            <option value="Present">Present</option>
-            <option value="Late">Late</option>
-            <option value="Absent">Absent</option>
-          </Form.Select>
-
-          <Table striped bordered hover responsive className="table-custom">
-            <thead className="table-primary">
+            <thead className="bg-dark text-white">
               <tr>
                 <th>Date</th>
                 <th>Day Schedule</th>
@@ -224,75 +251,79 @@ const Attendance = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredData.length === 0 ? (
+              {loading ? (
                 <tr>
-                  <td
-                    colSpan="10"
-                    className="text-center"
-                    style={{
-                      color: "red",
-                      fontWeight: "bold",
-                      backgroundColor: "#f8d7da",
-                    }}
-                  >
-                    No data available, please wait...
+                  <td colSpan="9" className="text-center text-muted">
+                    Loading data, please wait...
+                  </td>
+                </tr>
+              ) : !Array.isArray(getAllSaTimeIn) ? (
+                <tr>
+                  <td colSpan="9" className="text-center text-danger fw-bold">
+                    No data available. Please wait or check your connection.
+                  </td>
+                </tr>
+              ) : getAllSaTimeIn.length === 0 ? (
+                <tr>
+                  <td colSpan="9" className="text-center text-muted">
+                    No attendance records found.
                   </td>
                 </tr>
               ) : (
-                filteredData.map((timeIn, index) => {
-                  return (
-                    <tr key={index}>
-                      <td>{timeIn.formatted_date}</td>
-                      <td>{timeIn.day_name}</td>
-                      <td>{timeIn.time_schedule}</td>
-                      <td>{timeIn.time_in}</td>
-                      <td>{timeIn.time_out}</td>
-                      <td>
-                        <span
-                          className={`badge ${
-                            timeIn.approved_status === "Approved"
-                              ? "bg-success"
-                              : timeIn.approved_status === "Pending"
-                              ? "bg-warning text-dark"
-                              : "bg-danger"
-                          }`}
-                        >
-                          {timeIn.approved_status}
-                        </span>
-                      </td>
-                      <td>
-                        <span
-                          className={`badge ${
-                            timeIn.status === "On Time"
-                              ? "bg-success"
-                              : timeIn.status === "Late"
-                              ? "bg-danger"
-                              : "bg-secondary"
-                          }`}
-                        >
-                          {timeIn.status}
-                        </span>
-                      </td>
-                      <td>
-                        {timeIn.sa_fullname?.trim() || (
-                          <span style={{ color: "gray", fontStyle: "italic" }}>
-                            waiting to be approved...
-                          </span>
-                        )}
-                      </td>
-                      <td>
-                        <Button
-                          variant="secondary"
-                          onClick={() => {
-                            showApprovedModal(timeIn.track_id);
-                          }}
-                        >
-                          Approve
-                        </Button>
-                      </td>
-                    </tr>
-                  );
-                })
+                getAllSaTimeIn.map((timeIn, index) => (
+                  <tr
+                    key={index}
+                    style={{ transition: "0.3s", cursor: "pointer" }}
+                    className="table-hover"
+                  >
+                    <td style={{ padding: "12px" }}>{timeIn.formatted_date}</td>
+                    <td>{timeIn.day_name}</td>
+                    <td>{timeIn.time_schedule}</td>
+                    <td>{timeIn.time_in}</td>
+                    <td>{timeIn.time_out}</td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          timeIn.approved_status_name === "Approved"
+                            ? "bg-success"
+                            : timeIn.approved_status_name === "Pending"
+                            ? "bg-warning text-dark"
+                            : "bg-danger"
+                        }`}
+                      >
+                        {timeIn.approved_status_name}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          timeIn.status_name === "Present"
+                            ? "bg-success"
+                            : timeIn.status_name === "Late"
+                            ? "bg-danger"
+                            : "bg-secondary"
+                        }`}
+                      >
+                        {timeIn.status_name}
+                      </span>
+                    </td>
+                    <td>{timeIn.sa_fullname}</td>
+                    <td>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        className="px-3 d-flex align-items-center"
+                        onClick={() => showApprovedModal(timeIn.track_id)}
+                      >
+                        <i
+                          className="bi bi-check-circle"
+                          style={{ marginRight: "5px" }}
+                        ></i>
+                        Approve
+                      </Button>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </Table>
@@ -333,12 +364,20 @@ const Attendance = () => {
                   <td>
                     <Form.Select
                       value={approvedStatus}
-                      onChange={(e) => setApprovedStatus(e.target.value)}
+                      onChange={selectedApprovedStatus}
                       className="mb-3"
                     >
-                      <option value="Pending">Pending</option>
-                      <option value="Approved">Approved</option>
-                      <option value="Rejected">Rejected</option>
+                      <option value="">Select Approve Status</option>
+                      {getApprovedStatus.map((approvedStatus, index) => {
+                        return (
+                          <option
+                            key={index}
+                            value={approvedStatus.approved_status_id}
+                          >
+                            {approvedStatus.approved_status_name}
+                          </option>
+                        );
+                      })}
                     </Form.Select>
                   </td>
                 </tr>
@@ -347,12 +386,17 @@ const Attendance = () => {
                   <td>
                     <Form.Select
                       value={status}
-                      onChange={(e) => setStatus(e.target.value)}
+                      onChange={selectedStatus}
                       className="mb-3"
                     >
-                      <option value="Present">Present</option>
-                      <option value="Late">Late</option>
-                      <option value="Absent">Absent</option>
+                      <option value="">Select Status</option>
+                      {getStatus.map((status, index) => {
+                        return (
+                          <option key={index} value={status.status_id}>
+                            {status.status_name}
+                          </option>
+                        );
+                      })}
                     </Form.Select>
                   </td>
                 </tr>
