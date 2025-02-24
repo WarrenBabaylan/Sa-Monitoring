@@ -1,9 +1,9 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { Container, Spinner } from "react-bootstrap";
-import { useEffect, useState, useCallback } from "react";
-import { useLogout } from "@/components/admin/logout";
 import AdminNavbar from "@/components/admin/navbar";
+import { Container, Spinner } from "react-bootstrap";
+import { useLogout } from "@/components/admin/logout";
+import { useEffect, useState, useCallback } from "react";
 
 const Dashboard = () => {
   const [adminId, setAdminId] = useState(null);

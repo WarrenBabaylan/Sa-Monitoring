@@ -12,6 +12,7 @@ const TrackTime = () => {
   const [firstname, setFirstname] = useState(null);
   const [lastname, setLastname] = useState(null);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const [hasSchedule, setHasSchedule] = useState(false);
@@ -100,14 +101,21 @@ const TrackTime = () => {
       saId: saId,
     };
 
-    const response = await axios.get(url, {
-      params: {
-        json: JSON.stringify(jsonData),
-        operation: "displaySaTimeInTrack",
-      },
-    });
-    setGetSaTimeIn(response.data);
-    console.log(response.data);
+    setLoading(true);
+    try {
+      const response = await axios.get(url, {
+        params: {
+          json: JSON.stringify(jsonData),
+          operation: "displaySaTimeInTrack",
+        },
+      });
+      setGetSaTimeIn(response.data);
+      console.log(response.data);
+    } catch (error) {
+      setGetSaTimeIn(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const SaTimeIn = async () => {
@@ -290,60 +298,89 @@ const TrackTime = () => {
             {hasSchedule ? "Time Out" : "No Schedule Today"}
           </Button>
 
-          <Table striped bordered hover responsive className="table-dark mt-4">
-            <thead className="bg-primary text-white">
+          <Table
+            responsive
+            striped
+            bordered
+            hover
+            className="mb-0 text-center mt-4"
+            style={{ borderRadius: "8px", overflow: "hidden" }}
+          >
+            <thead className="bg-dark text-white">
               <tr>
-                <th className="fw-bold text-center">Date</th>
-                <th className="fw-bold text-center">Day</th>
-                <th className="fw-bold text-center">Time Schedule</th>
-                <th className="fw-bold text-center">Time In</th>
-                <th className="fw-bold text-center">Time Out</th>
-                <th className="fw-bold text-center">Approved Status</th>
-                <th className="fw-bold text-center">Status</th>
-                <th className="fw-bold text-center">Approved By</th>
+                <th>Date</th>
+                <th>Day</th>
+                <th>Time Schedule</th>
+                <th>Time In</th>
+                <th>Time Out</th>
+                <th>Approved Status</th>
+                <th>Status</th>
+                <th>Approved By</th>
               </tr>
             </thead>
-            <tbody className="table-light">
-              {getSaTimeIn.map((timeIn, index) => (
-                <tr key={index}>
-                  <td className="text-center">{timeIn.formatted_date}</td>
-                  <td className="text-center">{timeIn.day_name}</td>
-                  <td className="text-center">{timeIn.time_schedule}</td>
-                  <td className="text-center text-success fw-bold">
-                    {timeIn.time_in}
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan="6" className="text-center text-muted">
+                    Loading data, please wait...
                   </td>
-                  <td className="text-center text-danger fw-bold">
-                    {timeIn.time_out}
-                  </td>
-                  <td>
-                    <span
-                      className={`badge ${
-                        timeIn.approved_status_name === "Approved"
-                          ? "bg-success"
-                          : timeIn.approved_status_name === "Pending"
-                          ? "bg-warning text-dark"
-                          : "bg-danger"
-                      }`}
-                    >
-                      {timeIn.approved_status_name}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className={`badge ${
-                        timeIn.status_name === "Present"
-                          ? "bg-success"
-                          : timeIn.status_name === "Late"
-                          ? "bg-danger"
-                          : "bg-secondary"
-                      }`}
-                    >
-                      {timeIn.status_name}
-                    </span>
-                  </td>
-                  <td className="text-center text-secondary"><em>{timeIn.admin_fullname}</em></td>
                 </tr>
-              ))}
+              ) : !Array.isArray(getSaTimeIn) ? (
+                <tr>
+                  <td colSpan="6" className="text-center text-danger fw-bold">
+                    No data available. Please wait or check your connection.
+                  </td>
+                </tr>
+              ) : getSaTimeIn.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="text-center text-muted">
+                    No time in available.
+                  </td>
+                </tr>
+              ) : (
+                getSaTimeIn.map((timeIn, index) => (
+                  <tr key={index}>
+                    <td className="text-center">{timeIn.formatted_date}</td>
+                    <td className="text-center">{timeIn.day_name}</td>
+                    <td className="text-center">{timeIn.time_schedule}</td>
+                    <td className="text-center text-success fw-bold">
+                      {timeIn.time_in}
+                    </td>
+                    <td className="text-center text-danger fw-bold">
+                      {timeIn.time_out}
+                    </td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          timeIn.approved_status_name === "Approved"
+                            ? "bg-success"
+                            : timeIn.approved_status_name === "Pending"
+                            ? "bg-warning text-dark"
+                            : "bg-danger"
+                        }`}
+                      >
+                        {timeIn.approved_status_name}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          timeIn.status_name === "Present"
+                            ? "bg-success"
+                            : timeIn.status_name === "Late"
+                            ? "bg-danger"
+                            : "bg-secondary"
+                        }`}
+                      >
+                        {timeIn.status_name}
+                      </span>
+                    </td>
+                    <td className="text-center text-secondary">
+                      <em>{timeIn.admin_fullname}</em>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </Table>
         </Container>

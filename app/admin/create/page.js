@@ -407,7 +407,10 @@ const Create = () => {
                 placeholder={"enter firstname..."}
                 value={firstname}
                 onChange={(e) => {
-                  setFirstname(e.target.value);
+                  const value = e.target.value;
+                  if (/^[A-Za-z\s]*$/.test(value)) {
+                    setFirstname(value);
+                  }
                 }}
               />
 
@@ -429,20 +432,6 @@ const Create = () => {
                 onChange={(e) => {
                   setStudentId(e.target.value);
                 }}
-              />
-
-              <FormField
-                label={"Username"}
-                type={"text"}
-                value={username}
-                readOnly={true}
-              />
-
-              <FormField
-                label={"Password"}
-                type={"text"}
-                value={password}
-                readOnly={true}
               />
             </Form>
           </>

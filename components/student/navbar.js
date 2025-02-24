@@ -55,7 +55,9 @@ const SaNavbar = ({
           <Nav.Link href="apply-leave" className="text-light">
             <Icon.FileEarmarkText className="me-2" /> Apply Leave
           </Nav.Link>
-
+          <Nav.Link href="qrcode" className="text-light">
+            <Icon.QrCode className="me-2" /> QR Code
+          </Nav.Link>
           <Nav.Link onClick={logout} className="text-light">
             <Icon.BoxArrowDownRight className="me-2" /> Logout
           </Nav.Link>
