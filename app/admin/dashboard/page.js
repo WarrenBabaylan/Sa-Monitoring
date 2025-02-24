@@ -1,9 +1,10 @@
 "use client";
 import { useRouter } from "next/navigation";
 import AdminNavbar from "@/components/admin/navbar";
-import { Container, Spinner } from "react-bootstrap";
+import { Container, Spinner, Card } from "react-bootstrap";
 import { useLogout } from "@/components/admin/logout";
 import { useEffect, useState, useCallback } from "react";
+import axios from "axios";
 
 const Dashboard = () => {
   const [adminId, setAdminId] = useState(null);
@@ -13,6 +14,8 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const logout = useLogout();
   const router = useRouter();
+
+  const [getSAList, setGetSAList] = useState([]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -31,6 +34,10 @@ const Dashboard = () => {
     }
   }, [router]);
 
+  useEffect(() => {
+    retrieveSAList();
+  }, []);
+
   const handleResize = useCallback(() => {
     setIsSidebarVisible(window.innerWidth >= 768);
   }, []);
@@ -44,6 +51,23 @@ const Dashboard = () => {
   const toggleSidebar = useCallback(() => {
     setIsSidebarVisible((prev) => !prev);
   }, []);
+
+  const retrieveSAList = async () => {
+    const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+
+    const response = await axios.get(url, {
+      params: {
+        json: JSON.stringify({}),
+        operation: "displayTotalSA",
+      },
+    });
+    if (Array.isArray(response.data) && response.data.length > 0) {
+      setGetSAList(response.data[0].student_assistant);
+    } else {
+      setGetSAList(0);
+    }
+    console.log(response.data);
+  };
 
   if (isLoading) {
     return (
@@ -83,6 +107,21 @@ const Dashboard = () => {
           }}
         >
           <h2>Admin Dashboard</h2>
+          <Card
+            style={{
+              width: "18rem",
+              marginTop: "20px",
+              backgroundColor: "#2b59ff",
+              color: "white",
+            }}
+          >
+            <Card.Body>
+              <Card.Title>Total Student Assistant</Card.Title>
+              <h1 style={{ fontSize: "40px", textAlign: "center" }}>
+                {getSAList}
+              </h1>
+            </Card.Body>
+          </Card>
         </Container>
       </div>
     </>

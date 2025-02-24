@@ -64,6 +64,7 @@ const LeaveApproval = () => {
   const [reason, setReason] = useState("");
 
   const [approvedStatus, setApprovedStatus] = useState("");
+  const [adminComment, setAdminComment] = useState("");
 
   //--------------- Modal ---------------//
   const [showApprovedModal, setShowApprovedModal] = useState(false);
@@ -141,6 +142,7 @@ const LeaveApproval = () => {
     const jsonData = {
       leaveId: getSaLeaveRequestsById[0].leave_id,
       approvedStatus: approvedStatus,
+      adminComment: adminComment,
       adminId: adminId,
     };
 
@@ -158,6 +160,7 @@ const LeaveApproval = () => {
 
     if (response.data == 1) {
       alert("Leave Request approved!");
+      setAdminComment("");
       retrieveSaLeaveRequests();
     } else {
       alert("Leave Request Failed!");
@@ -218,25 +221,26 @@ const LeaveApproval = () => {
                 <th>Leave Type</th>
                 <th>Reason</th>
                 <th>Approved Status</th>
+                <th>Comment</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="text-center text-muted">
+                  <td colSpan="7" className="text-center text-muted">
                     Loading data, please wait...
                   </td>
                 </tr>
               ) : !Array.isArray(getSaLeaveRequests) ? (
                 <tr>
-                  <td colSpan="6" className="text-center text-danger fw-bold">
+                  <td colSpan="7" className="text-center text-danger fw-bold">
                     No data available. Please wait or check your connection.
                   </td>
                 </tr>
               ) : getSaLeaveRequests.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="text-center text-muted">
+                  <td colSpan="7" className="text-center text-muted">
                     No leave requests available.
                   </td>
                 </tr>
@@ -272,6 +276,14 @@ const LeaveApproval = () => {
                       >
                         {saLeaveRequest.approved_status_name}
                       </span>
+                    </td>
+                    <td>
+                      <textarea
+                        className="form-control"
+                        rows="2"
+                        readOnly
+                        value={saLeaveRequest.admin_comment}
+                      ></textarea>
                     </td>
                     <td>
                       <Button
@@ -352,6 +364,22 @@ const LeaveApproval = () => {
                         );
                       })}
                     </Form.Select>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Comment</td>
+                  <td>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Reason</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        placeholder="Enter reason for the leave..."
+                        value={adminComment}
+                        onChange={(e) => setAdminComment(e.target.value)}
+                        className="rounded border-1"
+                      />
+                    </Form.Group>
                   </td>
                 </tr>
               </tbody>

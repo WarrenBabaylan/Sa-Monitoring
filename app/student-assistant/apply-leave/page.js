@@ -270,12 +270,13 @@ const Leave = () => {
                 <th style={{ textAlign: "center" }}>Reason</th>
                 <th style={{ textAlign: "center" }}>Approval Status</th>
                 <th style={{ textAlign: "center" }}>Approved By</th>
+                <th style={{ textAlign: "center" }}>Comment</th>
               </tr>
             </thead>
             <tbody>
               {getSaLeaveRequests.length === 0 ? (
                 <tr>
-                  <td colSpan="5" style={{ textAlign: "center" }}>
+                  <td colSpan="6" style={{ textAlign: "center" }}>
                     No leave request for this date.
                   </td>
                 </tr>
@@ -319,6 +320,22 @@ const Leave = () => {
                     </td>
                     <td className="text-center text-secondary">
                       <em>{saLeaveRequest.admin_fullname}</em>
+                    </td>
+                    <td>
+                      <Form.Group>
+                        <Form.Control
+                          as="textarea"
+                          rows={3}
+                          value={saLeaveRequest.admin_comment}
+                          className="rounded border-1"
+                          style={{
+                            resize: "none",
+                            height: "80px",
+                            backgroundColor: "#f8f9fa",
+                          }}
+                          disabled
+                        />
+                      </Form.Group>
                     </td>
                   </tr>
                 ))
