@@ -404,7 +404,7 @@ const Create = () => {
               <FormField
                 label={"Firstname"}
                 type={"text"}
-                placeholder={"enter firstname..."}
+                placeholder={"enter firstname"}
                 value={firstname}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -417,7 +417,7 @@ const Create = () => {
               <FormField
                 label={"Lastname"}
                 type={"text"}
-                placeholder={"enter lastname..."}
+                placeholder={"enter lastname"}
                 value={lastname}
                 onChange={(e) => {
                   setLastname(e.target.value);
@@ -427,10 +427,14 @@ const Create = () => {
               <FormField
                 label={"Student ID"}
                 type={"text"}
-                placeholder={"enter student id..."}
+                placeholder={"enter student id"}
                 value={studentId}
                 onChange={(e) => {
-                  setStudentId(e.target.value);
+                  const value = e.target.value;
+                  if (/^\d*$/.test(value)) {
+                    // Allows only digits (0-9)
+                    setStudentId(value);
+                  }
                 }}
               />
             </Form>

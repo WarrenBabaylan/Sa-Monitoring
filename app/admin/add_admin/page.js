@@ -327,13 +327,6 @@ const ManageAdmin = () => {
                   setUsername(e.target.value);
                 }}
               />
-
-              <FormField
-                label={"Password"}
-                type={"text"}
-                value={password}
-                readOnly={true}
-              />
             </Form>
           </>
         }

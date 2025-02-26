@@ -1,10 +1,19 @@
 "use client";
 import axios from "axios";
+import Image from "next/image";
 import FormField from "./form";
 import { useRouter } from "next/navigation";
 import { AiOutlineReload } from "react-icons/ai";
 import { useState, useRef, useEffect } from "react";
-import { Container, Card, Form, Button, Alert, Spinner } from "react-bootstrap";
+import {
+  Container,
+  Card,
+  Form,
+  Button,
+  Toast,
+  Spinner,
+  ToastContainer,
+} from "react-bootstrap";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -16,16 +25,16 @@ const Login = () => {
   const [userCaptcha, setUserCaptcha] = useState("");
   const router = useRouter();
 
-  const [alertShow, setAlertShow] = useState({
+  const [toast, setToast] = useState({
     show: false,
     variant: "success",
     message: "",
   });
 
-  const showAlert = (variant, message) => {
-    setAlertShow({ show: true, variant, message });
+  const showToast = (variant, message) => {
+    setToast({ show: true, variant, message });
     setTimeout(() => {
-      setAlertShow((prev) => ({ ...prev, show: false }));
+      setToast((prev) => ({ ...prev, show: false }));
     }, 5000);
   };
 
@@ -46,19 +55,17 @@ const Login = () => {
   };
 
   const login = async () => {
-    if (!username && !password) {
-      showAlert("danger", "Username and Password are required");
+    if (!username && !password && !userCaptcha) {
+      showToast("danger", "Username, password, and CAPTCHA are required.");
       return;
     } else if (!username) {
-      showAlert("warning", "Username is required");
+      showToast("warning", "Username is required");
       return;
     } else if (!password) {
-      showAlert("warning", "Password is required");
+      showToast("warning", "Password is required");
       return;
-    }
-
-    if (!userCaptcha) {
-      showAlert("danger", "CAPTCHA is required");
+    } else if (!userCaptcha) {
+      showToast("danger", "CAPTCHA is required");
       return;
     }
 
@@ -89,23 +96,23 @@ const Login = () => {
         const { role } = response.data;
         let params = new URLSearchParams();
         if (role === "admin") {
-          showAlert("success", "Login successful");
+          showToast("success", "Login successful");
           sessionStorage.setItem("adminId", response.data.admin_id);
           sessionStorage.setItem("firstname", response.data.firstname);
           sessionStorage.setItem("lastname", response.data.lastname);
           router.push(`/admin/dashboard ${params}`);
         } else if (role === "student-assistant") {
-          showAlert("success", "Login successful");
+          showToast("success", "Login successful");
           sessionStorage.setItem("saId", response.data.sa_id);
           sessionStorage.setItem("firstname", response.data.firstname);
           sessionStorage.setItem("lastname", response.data.lastname);
           router.push(`/student-assistant/dashboard ${params}`);
         }
       } else {
-        showAlert("warning", "Invalid username or password");
+        showToast("warning", "Invalid username or password");
       }
     } catch (error) {
-      showAlert("danger", "Network error. Please try again.");
+      showToast("danger", "Network error. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -129,18 +136,38 @@ const Login = () => {
   };
 
   return (
-    <Container className="d-flex align-items-center justify-content-center vh-100">
+    <Container className="d-flex align-items-center justify-content-center vh-100 p-3">
       <Card
-        style={{ width: "30rem" }}
-        className="shadow-lg p-4 rounded text-black"
+        className="d-flex flex-column flex-md-row shadow-lg rounded-0 w-100"
+        style={{
+          maxWidth: "750px",
+          width: "100%",
+          transition: "all 0.3s ease-in-out",
+        }}
       >
-        <Card.Body style={{ backgroundColor: "#ffffff" }}>
+        <Card className="bg-success text-white p-4 w-100 d-flex flex-column align-items-center justify-content-center rounded-0">
+          <Image
+            src="/images/coc-logo.png"
+            alt="Logo"
+            width={120}
+            height={120}
+            priority
+          />
+          <h4 className="fw-bold text-center mt-2">Cagayan de Oro College</h4>
+          <p className="text-center">
+            PHINMA Education
+            <br />
+            Pro Deo et Humanitate
+          </p>
+        </Card>
+        <Card.Body className="w-100 p-4" style={{ backgroundColor: "#ffffff" }}>
           <div className="text-center mb-3">
-            <h2 className="text-[#1e0e4b] font-bold">
-              SA <span className="text-[#7747ff]">Monitoring</span>
+            <h2 className="text-dark fw-bold">
+              SA <span className="text-dark">Monitoring</span>
             </h2>
-            <p className="text-sm text-[#1e0e4b]">Log in to your account</p>
+            <p className="text-muted">Log in to your account</p>
           </div>
+
           <Form onKeyDown={handleKeyDown}>
             <FormField
               label={"Username"}
@@ -198,9 +225,10 @@ const Login = () => {
               />
 
               <Button
-                variant="light"
+                variant="link"
                 onClick={generateCaptcha}
-                className="ms-2"
+                className="ms-2 text-dark"
+                style={{ background: "none", boxShadow: "none" }}
               >
                 <AiOutlineReload />
               </Button>
@@ -233,19 +261,21 @@ const Login = () => {
                 "Login"
               )}
             </Button>
-
-            {alertShow.show && (
-              <Alert
-                variant={alertShow.variant}
-                onClose={() => setAlertShow({ ...alertShow, show: false })}
-                dismissible
-              >
-                {alertShow.message}
-              </Alert>
-            )}
           </Form>
         </Card.Body>
       </Card>
+
+      <ToastContainer position="top-end" className="p-3">
+        <Toast
+          show={toast.show}
+          onClose={() => setToast({ ...toast, show: false })}
+          delay={5000}
+          autohide
+          bg={toast.variant}
+        >
+          <Toast.Body className="text-white">{toast.message}</Toast.Body>
+        </Toast>
+      </ToastContainer>
     </Container>
   );
 };

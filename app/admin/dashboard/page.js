@@ -1,10 +1,24 @@
 "use client";
+import axios from "axios";
 import { useRouter } from "next/navigation";
 import AdminNavbar from "@/components/admin/navbar";
-import { Container, Spinner, Card } from "react-bootstrap";
 import { useLogout } from "@/components/admin/logout";
 import { useEffect, useState, useCallback } from "react";
-import axios from "axios";
+import {
+  Container,
+  Spinner,
+  Card,
+  Row,
+  Col,
+  Modal,
+  Button,
+  Tooltip as BootstrapTooltip,
+  OverlayTrigger,
+} from "react-bootstrap";
+import { Chart as ChartJS, ArcElement, Tooltip as ChartTooltip, Legend } from "chart.js";
+import { Pie } from "react-chartjs-2";
+
+ChartJS.register(ArcElement, ChartTooltip, Legend);
 
 const Dashboard = () => {
   const [adminId, setAdminId] = useState(null);
@@ -16,6 +30,11 @@ const Dashboard = () => {
   const router = useRouter();
 
   const [getSAList, setGetSAList] = useState([]);
+  const [getAdminList, setGetAdminList] = useState([]);
+  const [attendanceData, setAttendanceData] = useState(null);
+
+  const [totalSA, setTotalSA] = useState(0);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -36,6 +55,8 @@ const Dashboard = () => {
 
   useEffect(() => {
     retrieveSAList();
+    retrieveAdminList();
+    retrieveAttendancePie();
   }, []);
 
   const handleResize = useCallback(() => {
@@ -55,19 +76,80 @@ const Dashboard = () => {
   const retrieveSAList = async () => {
     const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
 
+    try {
+      const response = await axios.get(url, {
+        params: {
+          json: JSON.stringify({}),
+          operation: "displayTotalSA",
+        },
+      });
+      if (Array.isArray(response.data.students) && response.data.count) {
+        setGetSAList(response.data.students);
+        setTotalSA(response.data.count);
+      } else {
+        setGetSAList([]);
+        setTotalSA(0);
+      }
+      console.log(response.data);
+    } catch (error) {
+      //console.error("Error fetching student assistant data:", error);
+      setGetSAList([]);
+      setTotalSA(0);
+    }
+  };
+
+  const retrieveAdminList = async () => {
+    const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+
     const response = await axios.get(url, {
       params: {
         json: JSON.stringify({}),
-        operation: "displayTotalSA",
+        operation: "displayTotalAdmin",
       },
     });
     if (Array.isArray(response.data) && response.data.length > 0) {
-      setGetSAList(response.data[0].student_assistant);
+      setGetAdminList(response.data[0].admin);
     } else {
-      setGetSAList(0);
+      setGetAdminList(0);
     }
     console.log(response.data);
   };
+
+  const retrieveAttendancePie = async () => {
+    const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+
+    try {
+      const response = await axios.get(url, {
+        params: {
+          json: JSON.stringify({}),
+          operation: "displayAttedancePie",
+        },
+      });
+
+      console.log("Raw API Response:", response.data);
+
+      if (Array.isArray(response.data) && response.data.length > 0) {
+        const { total_present, total_late, total_absent } = response.data[0];
+
+        // Structure the data for Chart.js
+        const pieData = {
+          labels: ["Present", "Late", "Absent"],
+          datasets: [
+            {
+              data: [total_present, total_late, total_absent],
+              backgroundColor: ["#36A2EB", "#FFCE56", "#FF6384"],
+            },
+          ],
+        };
+        setAttendanceData(pieData);
+      } else {
+        console.error("Unexpected API response format", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching attendance data:", error);
+    }
+  };
+
 
   if (isLoading) {
     return (
@@ -107,23 +189,112 @@ const Dashboard = () => {
           }}
         >
           <h2>Admin Dashboard</h2>
-          <Card
-            style={{
-              width: "18rem",
-              marginTop: "20px",
-              backgroundColor: "#2b59ff",
-              color: "white",
-            }}
-          >
-            <Card.Body>
-              <Card.Title>Total Student Assistant</Card.Title>
-              <h1 style={{ fontSize: "40px", textAlign: "center" }}>
-                {getSAList}
-              </h1>
-            </Card.Body>
-          </Card>
+
+          <Row className="mt-4">
+            <Col
+              xs={12}
+              sm={6}
+              md={4}
+              lg={3}
+              className="d-flex justify-content-center"
+            >
+              <Card
+                style={{
+                  width: "18rem",
+                  backgroundColor: "#2b59ff",
+                  color: "white",
+                }}
+              >
+                <Card.Body>
+                  <Card.Title>Total Admin</Card.Title>
+                  <h1 style={{ fontSize: "40px", textAlign: "center" }}>
+                    {getAdminList}
+                  </h1>
+                </Card.Body>
+              </Card>
+            </Col>
+
+            <Col
+              xs={12}
+              sm={6}
+              md={4}
+              lg={3}
+              className="d-flex justify-content-center"
+            >
+              <Card
+                style={{
+                  width: "18rem",
+                  backgroundColor: "#2b59ff",
+                  color: "white",
+                  cursor: "pointer",
+                }}
+                onClick={() => setShowModal(true)}
+              >
+                <Card.Body>
+                  <Card.Title>Total Student Assistant</Card.Title>
+                  <h1 style={{ fontSize: "40px", textAlign: "center" }}>
+                    {totalSA}
+                  </h1>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+
+          <Row className="mt-3 justify-content-start">
+            <Col xs={12} md={6} lg={4}>
+              <Card>
+                <Card.Body>
+                  <Card.Title>Attendance Overview</Card.Title>
+                  <div style={{ width: "280px", height: "280px", marginLeft: "0" }}>
+                    {attendanceData ? (
+                      <Pie data={attendanceData} options={{ maintainAspectRatio: false }} />
+                    ) : (
+                      <p>Loading chart...</p>
+                    )}
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
         </Container>
       </div>
+
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Student Assistant List</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {getSAList.length > 0 ? (
+            <ul className="list-group">
+              {getSAList.map((sa) => (
+                <li key={sa.sa_id} className="list-group-item">
+                  <OverlayTrigger
+                    placement="top"
+                    overlay={
+                      <BootstrapTooltip id={`tooltip-${sa.sa_id}`}>
+                        {sa.total_duty_hours_formatted} / {sa.required_duty_hours}
+                      </BootstrapTooltip>
+                    }
+                  >
+                    <span
+                      style={{ cursor: "pointer" }}
+                    >
+                      {sa.sa_fullname}
+                    </span>
+                  </OverlayTrigger>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No student assistants found.</p>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };

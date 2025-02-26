@@ -1,10 +1,10 @@
 "use client";
-import { useRouter } from "next/navigation";
-import { Container, Spinner, Table } from "react-bootstrap";
-import { useEffect, useState, useCallback } from "react";
-import { useLogout } from "@/components/admin/logout";
-import AdminNavbar from "@/components/admin/navbar";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+import AdminNavbar from "@/components/admin/navbar";
+import { useLogout } from "@/components/admin/logout";
+import { useEffect, useState, useCallback } from "react";
+import { Container, Spinner, Table, Pagination } from "react-bootstrap";
 
 const Logs = () => {
   const [adminId, setAdminId] = useState(null);
@@ -17,6 +17,9 @@ const Logs = () => {
   const router = useRouter();
 
   const [getLogs, setGetLogs] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const recordsPerPage = 10;
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -36,8 +39,8 @@ const Logs = () => {
   }, [router]);
 
   useEffect(() => {
-    retrieveActivityLogs();
-  }, []);
+    retrieveActivityLogs(currentPage);
+  }, [currentPage]);
 
   const handleResize = useCallback(() => {
     setIsSidebarVisible(window.innerWidth >= 768);
@@ -53,22 +56,30 @@ const Logs = () => {
     setIsSidebarVisible((prev) => !prev);
   }, []);
 
-  const retrieveActivityLogs = async () => {
+  const retrieveActivityLogs = async (page) => {
     const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
     setLoading(true);
     try {
       const response = await axios.get(url, {
         params: {
-          json: JSON.stringify({}),
+          json: JSON.stringify({ limit: recordsPerPage, page }),
           operation: "displayActivityLog",
         },
       });
-      setGetLogs(response.data);
-      console.log(response.data);
+      setGetLogs(response.data.logs);
+      setTotalRecords(response.data.totalRecords);
     } catch (error) {
-      setGetLogs(null);
+      setGetLogs([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const totalPages = Math.ceil(totalRecords / recordsPerPage);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
     }
   };
 
@@ -132,12 +143,6 @@ const Logs = () => {
                     Loading data, please wait...
                   </td>
                 </tr>
-              ) : !Array.isArray(getLogs) ? (
-                <tr>
-                  <td colSpan="4" className="text-center text-danger fw-bold">
-                    No data available. Please wait or check your connection.
-                  </td>
-                </tr>
               ) : getLogs.length === 0 ? (
                 <tr>
                   <td colSpan="4" className="text-center text-muted">
@@ -159,6 +164,62 @@ const Logs = () => {
               )}
             </tbody>
           </Table>
+
+          {/* Pagination */}
+          <Pagination className="mt-3 justify-content-center">
+            <Pagination.First
+              onClick={() => handlePageChange(1)}
+              disabled={currentPage === 1}
+            />
+            <Pagination.Prev
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            />
+            {currentPage > 3 && (
+              <>
+                <Pagination.Item onClick={() => handlePageChange(1)}>
+                  1
+                </Pagination.Item>
+                <Pagination.Ellipsis disabled />
+              </>
+            )}
+            {[...Array(totalPages)]
+              .map((_, index) => index + 1)
+              .filter(
+                (page) =>
+                  page === 1 ||
+                  page === totalPages ||
+                  Math.abs(page - currentPage) <= 2
+              )
+              .map((page) => (
+                <Pagination.Item
+                  key={page}
+                  active={page === currentPage}
+                  onClick={() => handlePageChange(page)}
+                  className={
+                    page === currentPage ? "fw-bold text-white bg-primary" : ""
+                  }
+                >
+                  {page}
+                </Pagination.Item>
+              ))}
+            {currentPage < totalPages - 2 && (
+              <>
+                <Pagination.Ellipsis disabled />
+                <Pagination.Item onClick={() => handlePageChange(totalPages)}>
+                  {totalPages}
+                </Pagination.Item>
+              </>
+            )}
+            <Pagination.Next
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            />
+            <Pagination.Last
+              onClick={() => handlePageChange(totalPages)}
+              disabled={currentPage === totalPages}
+            />
+          </Pagination>
         </Container>
       </div>
     </>
