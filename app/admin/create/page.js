@@ -276,8 +276,8 @@ const Create = () => {
                       alertShow.variant === "danger"
                         ? "#d9534f"
                         : alertShow.variant === "warning"
-                        ? "#f0ad4e"
-                        : "#5cb85c",
+                          ? "#f0ad4e"
+                          : "#5cb85c",
                     fontWeight: "bold",
                   }}
                 >
@@ -286,8 +286,6 @@ const Create = () => {
               </Modal.Body>
             </Modal>
           )}
-
-          <h3>Student Assistant</h3>
 
           <Button
             variant="primary"

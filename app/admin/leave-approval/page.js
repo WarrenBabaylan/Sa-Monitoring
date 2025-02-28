@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
-import { Container, Button, Table, Form, Spinner } from "react-bootstrap";
+import { Container, Button, Table, Form, Spinner, Card } from "react-bootstrap";
 import axios from "axios";
 import ReusableModal from "@/components/modal";
 import { useLogout } from "@/components/admin/logout";
@@ -204,106 +204,110 @@ const LeaveApproval = () => {
             marginTop: "56px",
           }}
         >
-          <h2>Leave request Approval</h2>
-
-          <Table
-            responsive
-            striped
-            bordered
-            hover
-            className="mb-0 text-center"
-            style={{ borderRadius: "8px", overflow: "hidden" }}
-          >
-            <thead className="bg-dark text-white">
-              <tr>
-                <th>Date</th>
-                <th>Student Assistant</th>
-                <th>Leave Type</th>
-                <th>Reason</th>
-                <th>Approved Status</th>
-                <th>Comment</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan="7" className="text-center text-muted">
-                    Loading data, please wait...
-                  </td>
-                </tr>
-              ) : !Array.isArray(getSaLeaveRequests) ? (
-                <tr>
-                  <td colSpan="7" className="text-center text-danger fw-bold">
-                    No data available. Please wait or check your connection.
-                  </td>
-                </tr>
-              ) : getSaLeaveRequests.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="text-center text-muted">
-                    No leave requests available.
-                  </td>
-                </tr>
-              ) : (
-                getSaLeaveRequests.map((saLeaveRequest, index) => (
-                  <tr
-                    key={index}
-                    style={{ transition: "0.3s", cursor: "pointer" }}
-                    className="table-hover"
-                  >
-                    <td style={{ padding: "12px" }}>
-                      {saLeaveRequest.formatted_date}
-                    </td>
-                    <td>{saLeaveRequest.sa_fullname}</td>
-                    <td>{saLeaveRequest.leave_type}</td>
-                    <td>
-                      <textarea
-                        className="form-control"
-                        rows="2"
-                        readOnly
-                        value={saLeaveRequest.reason}
-                      ></textarea>
-                    </td>
-                    <td>
-                      <span
-                        className={`badge ${
-                          saLeaveRequest.approved_status_name === "Approved"
-                            ? "bg-success"
-                            : saLeaveRequest.approved_status_name === "Pending"
-                            ? "bg-warning text-dark"
-                            : "bg-danger"
-                        }`}
-                      >
-                        {saLeaveRequest.approved_status_name}
-                      </span>
-                    </td>
-                    <td>
-                      <textarea
-                        className="form-control"
-                        rows="2"
-                        readOnly
-                        value={saLeaveRequest.admin_comment}
-                      ></textarea>
-                    </td>
-                    <td>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        className="px-3 d-flex align-items-center"
-                        onClick={() => showModal(saLeaveRequest.leave_id)}
-                      >
-                        <i
-                          className="bi bi-check-circle"
-                          style={{ marginRight: "5px" }}
-                        ></i>
-                        Approve
-                      </Button>
-                    </td>
+          <Card className="shadow rounded-3 mt-3">
+            <Card.Header className="bg-primary text-white">
+              <h5>Leave Approval</h5>
+            </Card.Header>
+            <Card.Body>
+              <Table
+                responsive
+                striped
+                bordered
+                hover
+                className="mb-0 text-center"
+                style={{ borderRadius: "8px", overflow: "hidden" }}
+              >
+                <thead className="bg-dark text-white">
+                  <tr>
+                    <th>Date</th>
+                    <th>Student Assistant</th>
+                    <th>Leave Type</th>
+                    <th>Reason</th>
+                    <th>Approved Status</th>
+                    <th>Comment</th>
+                    <th>Action</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan="7" className="text-center text-muted">
+                        Loading data, please wait...
+                      </td>
+                    </tr>
+                  ) : !Array.isArray(getSaLeaveRequests) ? (
+                    <tr>
+                      <td colSpan="7" className="text-center text-danger fw-bold">
+                        No data available. Please wait or check your connection.
+                      </td>
+                    </tr>
+                  ) : getSaLeaveRequests.length === 0 ? (
+                    <tr>
+                      <td colSpan="7" className="text-center text-muted">
+                        No leave requests available.
+                      </td>
+                    </tr>
+                  ) : (
+                    getSaLeaveRequests.map((saLeaveRequest, index) => (
+                      <tr
+                        key={index}
+                        style={{ transition: "0.3s", cursor: "pointer" }}
+                        className="table-hover"
+                      >
+                        <td style={{ padding: "12px" }}>
+                          {saLeaveRequest.formatted_date}
+                        </td>
+                        <td>{saLeaveRequest.sa_fullname}</td>
+                        <td>{saLeaveRequest.leave_type}</td>
+                        <td>
+                          <textarea
+                            className="form-control"
+                            rows="2"
+                            readOnly
+                            value={saLeaveRequest.reason}
+                          ></textarea>
+                        </td>
+                        <td>
+                          <span
+                            className={`badge ${saLeaveRequest.approved_status_name === "Approved"
+                              ? "bg-success"
+                              : saLeaveRequest.approved_status_name === "Pending"
+                                ? "bg-warning text-dark"
+                                : "bg-danger"
+                              }`}
+                          >
+                            {saLeaveRequest.approved_status_name}
+                          </span>
+                        </td>
+                        <td>
+                          <textarea
+                            className="form-control"
+                            rows="2"
+                            readOnly
+                            value={saLeaveRequest.admin_comment}
+                          ></textarea>
+                        </td>
+                        <td>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            className="px-3 d-flex align-items-center"
+                            onClick={() => showModal(saLeaveRequest.leave_id)}
+                          >
+                            <i
+                              className="bi bi-check-circle"
+                              style={{ marginRight: "5px" }}
+                            ></i>
+                            Approve
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </Table>
+            </Card.Body>
+          </Card>
         </Container>
       </div>
 

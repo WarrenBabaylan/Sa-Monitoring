@@ -2,7 +2,7 @@
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
-import { Container, Table, Button, Form, Spinner } from "react-bootstrap";
+import { Container, Table, Button, Form, Spinner, Card } from "react-bootstrap";
 import ReusableModal from "@/components/modal";
 import { useLogout } from "@/components/admin/logout";
 import AdminNavbar from "@/components/admin/navbar";
@@ -227,106 +227,110 @@ const Attendance = () => {
             marginTop: "56px",
           }}
         >
-          <h2>Attendance Review</h2>
 
-          <Table
-            responsive
-            striped
-            bordered
-            hover
-            className="mb-0 text-center"
-            style={{ borderRadius: "8px", overflow: "hidden" }}
-          >
-            <thead className="bg-dark text-white">
-              <tr>
-                <th>Date</th>
-                <th>Day Schedule</th>
-                <th>Time Schedule</th>
-                <th>Time-in</th>
-                <th>Time-out</th>
-                <th>Approved Status</th>
-                <th>Status</th>
-                <th>Student Assistant</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan="9" className="text-center text-muted">
-                    Loading data, please wait...
-                  </td>
-                </tr>
-              ) : !Array.isArray(getAllSaTimeIn) ? (
-                <tr>
-                  <td colSpan="9" className="text-center text-danger fw-bold">
-                    No data available. Please wait or check your connection.
-                  </td>
-                </tr>
-              ) : getAllSaTimeIn.length === 0 ? (
-                <tr>
-                  <td colSpan="9" className="text-center text-muted">
-                    No attendance records found.
-                  </td>
-                </tr>
-              ) : (
-                getAllSaTimeIn.map((timeIn, index) => (
-                  <tr
-                    key={index}
-                    style={{ transition: "0.3s", cursor: "pointer" }}
-                    className="table-hover"
-                  >
-                    <td style={{ padding: "12px" }}>{timeIn.formatted_date}</td>
-                    <td>{timeIn.day_name}</td>
-                    <td>{timeIn.time_schedule}</td>
-                    <td>{timeIn.time_in}</td>
-                    <td>{timeIn.time_out}</td>
-                    <td>
-                      <span
-                        className={`badge ${
-                          timeIn.approved_status_name === "Approved"
-                            ? "bg-success"
-                            : timeIn.approved_status_name === "Pending"
-                            ? "bg-warning text-dark"
-                            : "bg-danger"
-                        }`}
-                      >
-                        {timeIn.approved_status_name}
-                      </span>
-                    </td>
-                    <td>
-                      <span
-                        className={`badge ${
-                          timeIn.status_name === "Present"
-                            ? "bg-success"
-                            : timeIn.status_name === "Late"
-                            ? "bg-danger"
-                            : "bg-secondary"
-                        }`}
-                      >
-                        {timeIn.status_name}
-                      </span>
-                    </td>
-                    <td>{timeIn.sa_fullname}</td>
-                    <td>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        className="px-3 d-flex align-items-center"
-                        onClick={() => showApprovedModal(timeIn.track_id)}
-                      >
-                        <i
-                          className="bi bi-check-circle"
-                          style={{ marginRight: "5px" }}
-                        ></i>
-                        Approve
-                      </Button>
-                    </td>
+          <Card className="shadow rounded-3 mt-3">
+            <Card.Header className="bg-primary text-white">
+              <h5>Attendace Review</h5>
+            </Card.Header>
+            <Card.Body>
+              <Table
+                responsive
+                striped
+                bordered
+                hover
+                className="mb-0 text-center"
+                style={{ borderRadius: "8px", overflow: "hidden" }}
+              >
+                <thead className="bg-dark text-white">
+                  <tr>
+                    <th>Date</th>
+                    <th>Day Schedule</th>
+                    <th>Time Schedule</th>
+                    <th>Time-in</th>
+                    <th>Time-out</th>
+                    <th>Approved Status</th>
+                    <th>Status</th>
+                    <th>Student Assistant</th>
+                    <th>Action</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan="9" className="text-center text-muted">
+                        Loading data, please wait...
+                      </td>
+                    </tr>
+                  ) : !Array.isArray(getAllSaTimeIn) ? (
+                    <tr>
+                      <td colSpan="9" className="text-center text-danger fw-bold">
+                        No data available. Please wait or check your connection.
+                      </td>
+                    </tr>
+                  ) : getAllSaTimeIn.length === 0 ? (
+                    <tr>
+                      <td colSpan="9" className="text-center text-muted">
+                        No attendance records found.
+                      </td>
+                    </tr>
+                  ) : (
+                    getAllSaTimeIn.map((timeIn, index) => (
+                      <tr
+                        key={index}
+                        style={{ transition: "0.3s", cursor: "pointer" }}
+                        className="table-hover"
+                      >
+                        <td style={{ padding: "12px" }}>{timeIn.formatted_date}</td>
+                        <td>{timeIn.day_name}</td>
+                        <td>{timeIn.time_schedule}</td>
+                        <td>{timeIn.time_in}</td>
+                        <td>{timeIn.time_out}</td>
+                        <td>
+                          <span
+                            className={`badge ${timeIn.approved_status_name === "Approved"
+                                ? "bg-success"
+                                : timeIn.approved_status_name === "Pending"
+                                  ? "bg-warning text-dark"
+                                  : "bg-danger"
+                              }`}
+                          >
+                            {timeIn.approved_status_name}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            className={`badge ${timeIn.status_name === "Present"
+                                ? "bg-success"
+                                : timeIn.status_name === "Late"
+                                  ? "bg-danger"
+                                  : "bg-secondary"
+                              }`}
+                          >
+                            {timeIn.status_name}
+                          </span>
+                        </td>
+                        <td>{timeIn.sa_fullname}</td>
+                        <td>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            className="px-3 d-flex align-items-center"
+                            onClick={() => showApprovedModal(timeIn.track_id)}
+                          >
+                            <i
+                              className="bi bi-check-circle"
+                              style={{ marginRight: "5px" }}
+                            ></i>
+                            Approve
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </Table>
+            </Card.Body>
+          </Card>
         </Container>
       </div>
 

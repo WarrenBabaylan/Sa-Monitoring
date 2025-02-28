@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import AdminNavbar from "@/components/admin/navbar";
 import { useLogout } from "@/components/admin/logout";
 import { useEffect, useState, useCallback } from "react";
-import { Container, Spinner, Table, Pagination } from "react-bootstrap";
+import { Container, Spinner, Table, Pagination, Card } from "react-bootstrap";
 
 const Logs = () => {
   const [adminId, setAdminId] = useState(null);
@@ -120,106 +120,90 @@ const Logs = () => {
             marginTop: "56px",
           }}
         >
-          <h2 className="mb-3">Activity Logs</h2>
-          <Table
-            responsive
-            striped
-            bordered
-            hover
-            className="mb-0 text-center"
-            style={{ borderRadius: "8px", overflow: "hidden" }}
-          >
-            <thead className="bg-dark text-white">
-              <tr>
-                <th>Activity Logs</th>
-                <th>Admin</th>
-                <th>Created At</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan="4" className="text-center text-muted">
-                    Loading data, please wait...
-                  </td>
-                </tr>
-              ) : getLogs.length === 0 ? (
-                <tr>
-                  <td colSpan="4" className="text-center text-muted">
-                    No logs available.
-                  </td>
-                </tr>
-              ) : (
-                getLogs.map((activityLogs, index) => (
-                  <tr key={index} className="align-middle">
-                    <td className="text-start text-break">
-                      {activityLogs.action}
-                    </td>
-                    <td className="text-center">{activityLogs.admin_name}</td>
-                    <td className="text-center">
-                      {activityLogs.formatted_timestamp}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
 
-          {/* Pagination */}
-          <Pagination className="mt-3 justify-content-center">
-            <Pagination.First
-              onClick={() => handlePageChange(1)}
-              disabled={currentPage === 1}
-            />
-            <Pagination.Prev
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            />
-            {currentPage > 3 && (
-              <>
-                <Pagination.Item onClick={() => handlePageChange(1)}>
-                  1
-                </Pagination.Item>
-                <Pagination.Ellipsis disabled />
-              </>
-            )}
-            {[...Array(totalPages)]
-              .map((_, index) => index + 1)
-              .filter(
-                (page) =>
-                  page === 1 ||
-                  page === totalPages ||
-                  Math.abs(page - currentPage) <= 2
-              )
-              .map((page) => (
-                <Pagination.Item
-                  key={page}
-                  active={page === currentPage}
-                  onClick={() => handlePageChange(page)}
-                  className={
-                    page === currentPage ? "fw-bold text-white bg-primary" : ""
-                  }
-                >
-                  {page}
-                </Pagination.Item>
-              ))}
-            {currentPage < totalPages - 2 && (
-              <>
-                <Pagination.Ellipsis disabled />
-                <Pagination.Item onClick={() => handlePageChange(totalPages)}>
-                  {totalPages}
-                </Pagination.Item>
-              </>
-            )}
-            <Pagination.Next
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            />
-            <Pagination.Last
-              onClick={() => handlePageChange(totalPages)}
-              disabled={currentPage === totalPages}
-            />
-          </Pagination>
+          <Card className="shadow rounded-3 mt-3">
+            <Card.Header className="bg-primary text-white">
+              <h5>Activity Logs</h5>
+            </Card.Header>
+            <Card.Body>
+              <Table
+                responsive
+                striped
+                bordered
+                hover
+                className="mb-0 text-center"
+                style={{ borderRadius: "8px", overflow: "hidden" }}
+              >
+                <thead className="bg-dark text-white">
+                  <tr>
+                    <th>Activity Logs</th>
+                    <th>Admin</th>
+                    <th>Created At</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan="3" className="text-center text-muted">
+                        Loading data, please wait...
+                      </td>
+                    </tr>
+                  ) : getLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan="3" className="text-center text-muted">
+                        No logs available.
+                      </td>
+                    </tr>
+                  ) : (
+                    getLogs.map((activityLogs, index) => (
+                      <tr key={index} className="align-middle">
+                        <td className="text-start text-break">
+                          {activityLogs.action}
+                        </td>
+                        <td className="text-center">{activityLogs.admin_name}</td>
+                        <td className="text-center">
+                          {activityLogs.formatted_timestamp}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </Table>
+            </Card.Body>
+
+            <Pagination className="mt-2 justify-content-center">
+              <Pagination.First
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+              />
+              <Pagination.Prev
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              />
+
+              {[...Array(totalPages)].map((_, index) => {
+                const page = index + 1;
+                return (
+                  <Pagination.Item
+                    key={page}
+                    active={page === currentPage}
+                    onClick={() => handlePageChange(page)}
+                  >
+                    {page}
+                  </Pagination.Item>
+                );
+              })}
+
+              <Pagination.Next
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              />
+              <Pagination.Last
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages}
+              />
+            </Pagination>
+          </Card>
         </Container>
       </div>
     </>

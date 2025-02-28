@@ -191,71 +191,56 @@ const Dashboard = () => {
           <h2>Admin Dashboard</h2>
 
           <Row className="mt-4">
-            <Col
-              xs={12}
-              sm={6}
-              md={4}
-              lg={3}
-              className="d-flex justify-content-center"
-            >
-              <Card
-                style={{
-                  width: "18rem",
-                  backgroundColor: "#2b59ff",
-                  color: "white",
-                }}
-              >
+            <Col xs={12} sm={6} md={4} lg={3} className="d-flex justify-content-center">
+              <Card style={{ width: '18rem', backgroundColor: '#2b59ff', color: 'white' }}>
                 <Card.Body>
                   <Card.Title>Total Admin</Card.Title>
-                  <h1 style={{ fontSize: "40px", textAlign: "center" }}>
-                    {getAdminList}
-                  </h1>
+                  <h1 style={{ fontSize: '40px', textAlign: 'center' }}>{getAdminList}</h1>
                 </Card.Body>
               </Card>
             </Col>
 
-            <Col
-              xs={12}
-              sm={6}
-              md={4}
-              lg={3}
-              className="d-flex justify-content-center"
-            >
+            <Col xs={12} sm={6} md={4} lg={3} className="d-flex justify-content-center">
               <Card
                 style={{
-                  width: "18rem",
-                  backgroundColor: "#2b59ff",
-                  color: "white",
-                  cursor: "pointer",
+                  width: '18rem',
+                  backgroundColor: '#2b59ff',
+                  color: 'white',
+                  cursor: 'pointer',
                 }}
                 onClick={() => setShowModal(true)}
               >
                 <Card.Body>
                   <Card.Title>Total Student Assistant</Card.Title>
-                  <h1 style={{ fontSize: "40px", textAlign: "center" }}>
-                    {totalSA}
-                  </h1>
+                  <h1 style={{ fontSize: '40px', textAlign: 'center' }}>{totalSA}</h1>
                 </Card.Body>
               </Card>
             </Col>
           </Row>
 
-          <Row className="mt-3 justify-content-start">
-            <Col xs={12} md={6} lg={4}>
-              <Card>
+          <Row className="mt-4">
+            <Col xs={12} sm={6} md={4} lg={3} className="d-flex justify-content-center">
+              <Card style={{ width: "18rem" }}>
                 <Card.Body>
                   <Card.Title>Attendance Overview</Card.Title>
-                  <div style={{ width: "280px", height: "280px", marginLeft: "0" }}>
-                    {attendanceData ? (
-                      <Pie data={attendanceData} options={{ maintainAspectRatio: false }} />
-                    ) : (
-                      <p>Loading chart...</p>
-                    )}
-                  </div>
+                  {attendanceData ? (
+                    <div style={{ width: "100%", height: "250px" }}>
+                      <Pie
+                        data={attendanceData}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <p>Loading chart...</p>
+                  )}
                 </Card.Body>
               </Card>
             </Col>
           </Row>
+
         </Container>
       </div>
 
@@ -265,9 +250,9 @@ const Dashboard = () => {
         </Modal.Header>
         <Modal.Body>
           {getSAList.length > 0 ? (
-            <ul className="list-group">
+            <div>
               {getSAList.map((sa) => (
-                <li key={sa.sa_id} className="list-group-item">
+                <div key={sa.sa_id} style={{ marginBottom: "5px" }}>
                   <OverlayTrigger
                     placement="top"
                     overlay={
@@ -276,15 +261,13 @@ const Dashboard = () => {
                       </BootstrapTooltip>
                     }
                   >
-                    <span
-                      style={{ cursor: "pointer" }}
-                    >
+                    <span style={{ cursor: "pointer", display: "inline-block" }}>
                       {sa.sa_fullname}
                     </span>
                   </OverlayTrigger>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           ) : (
             <p>No student assistants found.</p>
           )}

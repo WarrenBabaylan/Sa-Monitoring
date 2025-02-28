@@ -9,6 +9,7 @@ import {
   Modal,
   Spinner,
   Table,
+  Card,
 } from "react-bootstrap";
 import ReusableModal from "@/components/modal";
 import { useLogout } from "@/components/admin/logout";
@@ -225,8 +226,8 @@ const ManageAdmin = () => {
                       alertShow.variant === "danger"
                         ? "#d9534f"
                         : alertShow.variant === "warning"
-                        ? "#f0ad4e"
-                        : "#5cb85c",
+                          ? "#f0ad4e"
+                          : "#5cb85c",
                     fontWeight: "bold",
                   }}
                 >
@@ -236,11 +237,8 @@ const ManageAdmin = () => {
             </Modal>
           )}
 
-          <h3>Manage Admin</h3>
-
           <Button
             variant="primary"
-            className="mb-1"
             onClick={() => {
               handleShowModal();
             }}
@@ -248,39 +246,46 @@ const ManageAdmin = () => {
             Add Admin
           </Button>
 
-          <Table responsive bordered hover className="mb-4 text-center">
-            <thead className="bg-primary text-white">
-              <tr>
-                <th>#</th>
-                <th>Firstname</th>
-                <th>Lastname</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan="5" className="text-center text-muted">
-                    <Spinner animation="border" size="sm" className="me-2" />
-                    Loading data, please wait...
-                  </td>
-                </tr>
-              ) : !Array.isArray(getAdmin) || getAdmin.length === 0 ? (
-                <tr>
-                  <td colSpan="5" className="text-center text-danger fw-bold">
-                    No data available. Please wait or check your connection.
-                  </td>
-                </tr>
-              ) : (
-                getAdmin.map((admin, index) => (
-                  <tr key={index} className="align-middle">
-                    <td>{index + 1}</td>
-                    <td>{admin.firstname}</td>
-                    <td>{admin.lastname}</td>
+          <Card className="shadow rounded-3 mt-3">
+            <Card.Header className="bg-primary text-white">
+              <h5>Manage Admin</h5>
+            </Card.Header>
+            <Card.Body>
+              <Table responsive bordered hover className="mb-4 text-center">
+                <thead className="bg-primary text-white">
+                  <tr>
+                    <th>#</th>
+                    <th>Firstname</th>
+                    <th>Lastname</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan="5" className="text-center text-muted">
+                        <Spinner animation="border" size="sm" className="me-2" />
+                        Loading data, please wait...
+                      </td>
+                    </tr>
+                  ) : !Array.isArray(getAdmin) || getAdmin.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="text-center text-danger fw-bold">
+                        No data available. Please wait or check your connection.
+                      </td>
+                    </tr>
+                  ) : (
+                    getAdmin.map((admin, index) => (
+                      <tr key={index} className="align-middle">
+                        <td>{index + 1}</td>
+                        <td>{admin.firstname}</td>
+                        <td>{admin.lastname}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </Table>
+            </Card.Body>
+          </Card>
         </Container>
       </div>
 
