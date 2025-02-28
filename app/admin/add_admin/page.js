@@ -304,6 +304,17 @@ const ManageAdmin = () => {
                 }
               }}
             >
+
+              <FormField
+                label={"Username"}
+                type={"text"}
+                placeholder={"enter lastname..."}
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                }}
+              />
+
               <FormField
                 label={"Firstname"}
                 type={"text"}
@@ -321,15 +332,6 @@ const ManageAdmin = () => {
                 value={lastname}
                 onChange={(e) => {
                   setLastname(e.target.value);
-                }}
-              />
-
-              <FormField
-                label={"Username"}
-                type={"text"}
-                value={username}
-                onChange={(e) => {
-                  setUsername(e.target.value);
                 }}
               />
             </Form>

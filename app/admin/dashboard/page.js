@@ -17,6 +17,8 @@ import {
 } from "react-bootstrap";
 import { Chart as ChartJS, ArcElement, Tooltip as ChartTooltip, Legend } from "chart.js";
 import { Pie } from "react-chartjs-2";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 ChartJS.register(ArcElement, ChartTooltip, Legend);
 
@@ -32,6 +34,7 @@ const Dashboard = () => {
   const [getSAList, setGetSAList] = useState([]);
   const [getAdminList, setGetAdminList] = useState([]);
   const [attendanceData, setAttendanceData] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date()); // Default to current week
 
   const [totalSA, setTotalSA] = useState(0);
   const [showModal, setShowModal] = useState(false);
@@ -57,7 +60,7 @@ const Dashboard = () => {
     retrieveSAList();
     retrieveAdminList();
     retrieveAttendancePie();
-  }, []);
+  }, [selectedDate]);
 
   const handleResize = useCallback(() => {
     setIsSidebarVisible(window.innerWidth >= 768);
@@ -115,13 +118,29 @@ const Dashboard = () => {
     console.log(response.data);
   };
 
+  const getWeekRange = (date) => {
+    const start = new Date(date);
+    start.setDate(start.getDate() - start.getDay() + 1); // Set to Monday
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(start);
+    end.setDate(end.getDate() + 6); // Set to Sunday
+    end.setHours(23, 59, 59, 999);
+
+    return { start, end };
+  };
+
   const retrieveAttendancePie = async () => {
+    const { start, end } = getWeekRange(selectedDate);
     const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
 
     try {
       const response = await axios.get(url, {
         params: {
-          json: JSON.stringify({}),
+          json: JSON.stringify({
+            start_date: start.toISOString().split("T")[0],
+            end_date: end.toISOString().split("T")[0],
+          }),
           operation: "displayAttedancePie",
         },
       });
@@ -188,43 +207,51 @@ const Dashboard = () => {
             marginTop: "56px",
           }}
         >
-          <h2>Admin Dashboard</h2>
 
-          <Row className="mt-4">
+          <Row className="mt-1 g-3">
             <Col xs={12} sm={6} md={4} lg={3} className="d-flex justify-content-center">
-              <Card style={{ width: '18rem', backgroundColor: '#2b59ff', color: 'white' }}>
-                <Card.Body>
+              <Card className="text-white shadow w-100" style={{ backgroundColor: "#2b59ff" }}>
+                <Card.Body className="text-center p-4">
                   <Card.Title>Total Admin</Card.Title>
-                  <h1 style={{ fontSize: '40px', textAlign: 'center' }}>{getAdminList}</h1>
+                  <h1 className="fw-bold">{getAdminList}</h1>
                 </Card.Body>
               </Card>
             </Col>
 
             <Col xs={12} sm={6} md={4} lg={3} className="d-flex justify-content-center">
               <Card
-                style={{
-                  width: '18rem',
-                  backgroundColor: '#2b59ff',
-                  color: 'white',
-                  cursor: 'pointer',
-                }}
+                className="text-white shadow w-100"
+                style={{ backgroundColor: "#2b59ff", cursor: "pointer" }}
                 onClick={() => setShowModal(true)}
               >
-                <Card.Body>
+                <Card.Body className="text-center p-4">
                   <Card.Title>Total Student Assistant</Card.Title>
-                  <h1 style={{ fontSize: '40px', textAlign: 'center' }}>{totalSA}</h1>
+                  <h1 className="fw-bold">{totalSA}</h1>
                 </Card.Body>
               </Card>
             </Col>
           </Row>
 
           <Row className="mt-4">
-            <Col xs={12} sm={6} md={4} lg={3} className="d-flex justify-content-center">
-              <Card style={{ width: "18rem" }}>
-                <Card.Body>
-                  <Card.Title>Attendance Overview</Card.Title>
+            <Col>
+              <h6 className="fw-bold">Select a Week:</h6>
+              <DatePicker
+                selected={selectedDate}
+                onChange={(date) => setSelectedDate(date)}
+                dateFormat="yyyy-MM-dd"
+                showWeekNumbers
+                className="form-control"
+              />
+            </Col>
+          </Row>
+
+          <Row className="mt-2 g-3 justify-content-start">
+            <Col xs={12} sm={6} md={4} className="d-flex justify-content-start">
+              <Card className="shadow w-100" style={{ maxWidth: "280px" }}>
+                <Card.Body className="text-center p-3">
+                  <Card.Title>Weekly Attendance</Card.Title>
                   {attendanceData ? (
-                    <div style={{ width: "100%", height: "250px" }}>
+                    <div style={{ width: "100%", minHeight: "220px", display: "flex", justifyContent: "center" }}>
                       <Pie
                         data={attendanceData}
                         options={{
@@ -239,8 +266,25 @@ const Dashboard = () => {
                 </Card.Body>
               </Card>
             </Col>
-          </Row>
 
+            {/* Placeholder for Future Pie (2nd Pie) */}
+            {/* <Col xs={12} sm={6} md={4} className="d-flex justify-content-center">
+              <Card className="shadow w-100" style={{ maxWidth: "280px", minHeight: "220px" }}>
+                <Card.Body className="text-center p-4 d-flex align-items-center justify-content-center">
+                  <h5 className="text-muted">Future Chart Here</h5>
+                </Card.Body>
+              </Card>
+            </Col> */}
+
+            {/* Placeholder for Future Pie (3rd Pie) */}
+            {/* <Col xs={12} sm={6} md={4} className="d-flex justify-content-center">
+              <Card className="shadow w-100" style={{ maxWidth: "280px", minHeight: "220px" }}>
+                <Card.Body className="text-center p-4 d-flex align-items-center justify-content-center">
+                  <h5 className="text-muted">Future Chart Here</h5>
+                </Card.Body>
+              </Card>
+            </Col> */}
+          </Row>
         </Container>
       </div>
 

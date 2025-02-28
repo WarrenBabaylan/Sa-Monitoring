@@ -209,10 +209,10 @@ const Login = () => {
               <input
                 type="text"
                 className={`form-control text-center ${userCaptcha && parseInt(userCaptcha) !== captchaAnswer
-                  ? "border border-danger text-danger"
-                  : userCaptcha && parseInt(userCaptcha) === captchaAnswer
-                    ? "border border-success text-success"
-                    : ""
+                    ? "border border-danger text-danger"
+                    : userCaptcha && parseInt(userCaptcha) === captchaAnswer
+                      ? "border border-success text-success"
+                      : ""
                   }`}
                 value={userCaptcha}
                 onChange={(e) => {
@@ -238,8 +238,8 @@ const Login = () => {
                 Please fill correct value
               </div>
             )}
-            
-              <Button
+
+            <Button
               variant="primary"
               onClick={login}
               className="w-100 mt-2 mb-2 bg-[#7747ff] text-white"
