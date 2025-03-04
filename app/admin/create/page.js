@@ -18,9 +18,9 @@ import ReusableModal from "@/components/modal";
 import FormField from "@/components/form";
 
 const Create = () => {
-    const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const { user, isLoading, setIsLoading } = useAuth();
     const [loading, setLoading] = useState(false);
+    const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const router = useRouter();
     const logout = useLogout();
 
