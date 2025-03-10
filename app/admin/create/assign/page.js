@@ -18,6 +18,7 @@ const AssignSchedule = () => {
     const { user, isLoading, setIsLoading } = useAuth();
     const searchParams = useSearchParams();
     const saId = searchParams.get("saId");
+    const requiredDutyHours = searchParams.get("requiredDutyHours");
     const router = useRouter();
 
     useEffect(() => {
@@ -26,7 +27,7 @@ const AssignSchedule = () => {
                 setIsLoading(true);
                 setTimeout(() => {
                     router.push("/");
-                }, 1000);
+                }, 800);
             }
         }
     }, [user, isLoading, router, setIsLoading]);
@@ -44,6 +45,17 @@ const AssignSchedule = () => {
         retrieveDays();
         retrieveDutyHours();
     }, []);
+
+    useEffect(() => {
+        if (requiredDutyHours && Array.isArray(getDutyHours)) {
+            const matchingOption = getDutyHours.find(
+                (hours) => hours.required_duty_hours == requiredDutyHours
+            );
+            if (matchingOption) {
+                setDutyHours(matchingOption.duty_hours_id);
+            }
+        }
+    }, [requiredDutyHours, getDutyHours]);
 
     const [alertShow, setAlertShow] = useState({
         show: false,

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import AdminNavbar from "@/components/admin/navbar";
 import { useLogout } from "@/components/logout";
 import { useAuth } from "@/components/useAuth";
-import { Container, Button, Spinner } from "react-bootstrap";
+import { Container, Button, Spinner, Toast, ToastContainer } from "react-bootstrap";
 import FormField from "@/components/form";
 
 const DutyHours = () => {
@@ -41,11 +41,24 @@ const DutyHours = () => {
         setIsSidebarVisible((prev) => !prev);
     }, []);
 
+    const [toast, setToast] = useState({
+        show: false,
+        variant: "success",
+        message: "",
+    });
+
+    const showToast = (variant, message) => {
+        setToast({ show: true, variant, message });
+        setTimeout(() => {
+            setToast((prev) => ({ ...prev, show: false }));
+        }, 5000);
+    };
+
     const addDutyHours = async () => {
         const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
 
         const jsonData = {
-            requiedDutyHours: hours,
+            requiredDutyHours: hours,
             adminId: user.user_id,
         };
 
@@ -55,17 +68,28 @@ const DutyHours = () => {
         formData.append("operation", "addDutyHours");
         formData.append("json", JSON.stringify(jsonData));
 
-        const response = await axios({
-            url: url,
-            method: "POST",
-            data: formData,
-        });
+        try {
+            const response = await axios({
+                url: url,
+                method: "POST",
+                data: formData,
+            });
 
-        if (response.data == 1) {
-            alert("Add duty hours successfull.");
-            setHours("");
-        } else {
-            alert("Add duty hours failed!");
+            if (response.status !== 200) {
+                throw new Error("Server error");
+            }
+
+            if (response.data == 1) {
+                showToast("success", "Duty hours added successfully.");
+                setHours("");
+            } else if (response.data == 2) {
+                showToast("warning", "Duty hours already exist.");
+            } else {
+                showToast("warning", "Duty hours added failed.");
+            }
+        } catch (error) {
+            console.error("Error adding duty hours:", error);
+            showToast("danger", "Network error. Please try again.");
         }
     };
 
@@ -128,6 +152,18 @@ const DutyHours = () => {
                     </Button>
                 </Container>
             </div>
+
+            <ToastContainer position="top-end" className="p-3">
+                <Toast
+                    show={toast.show}
+                    onClose={() => setToast({ ...toast, show: false })}
+                    delay={5000}
+                    autohide
+                    bg={toast.variant}
+                >
+                    <Toast.Body className="text-white">{toast.message}</Toast.Body>
+                </Toast>
+            </ToastContainer>
         </>
     );
 };

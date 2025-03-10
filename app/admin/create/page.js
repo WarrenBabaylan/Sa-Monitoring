@@ -13,7 +13,9 @@ import {
     Spinner,
     Table,
     Card,
-    Pagination
+    Pagination,
+    Row,
+    Col
 } from "react-bootstrap";
 import ReusableModal from "@/components/modal";
 import FormField from "@/components/form";
@@ -51,6 +53,9 @@ const Create = () => {
     }, []);
 
     const [saId, setSaId] = useState("");
+    const [requiredDutyHours, setRequiredDutyHours] = useState("");
+    const [start, setStart] = useState("");
+    const [end, setEnd] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
 
     const [getAllSa, setGetAllSa] = useState([]);
@@ -128,15 +133,20 @@ const Create = () => {
                     operation: "displayAllSa",
                 },
             });
-            if (!response.data || response.data.length === 0) {
+
+            if (!response.data || !response.data.data || response.data.data.length === 0) {
                 showAlert("danger", "Student Assistant not found.");
                 return false;
             }
 
-            const student = response.data[0];
-            setGetSaById(response.data);
+            const student = response.data.data[0];
+            setGetSaById(response.data.data);
             setSaId(student.sa_id);
-            return true;
+            setRequiredDutyHours(student.required_duty_hours);
+            setStart(student.start);
+            setEnd(student.end);
+
+            return { saId: student.sa_id, requiredDutyHours: student.required_duty_hours, start: student.start_time, end: student.end_time };
         } catch (error) {
             showAlert("danger", "Error retrieving student assistant data.");
             return false;
@@ -146,7 +156,8 @@ const Create = () => {
     const showAssignSched = async (saId) => {
         const found = await retrieveSaById(saId);
         if (found) {
-            router.push(`/admin/create/assign?saId=${saId}`);
+            //router.push(`/admin/create/assign?saId=${saId}`);
+            router.push(`/admin/create/assign?saId=${found.saId}&requiredDutyHours=${found.requiredDutyHours}&start=${found.start}&end=${found.end}`);
         }
     };
 
@@ -375,8 +386,11 @@ const Create = () => {
                                                 <td style={{ padding: "12px" }}>{sa.student_id}</td>
                                                 <td style={{ padding: "12px" }}>{sa.sa_fullname}</td>
                                                 <td>{sa.day_names}</td>
-                                                <td>{sa.time_schedule}</td>
-                                                <td>{sa.required_duty_hours}</td>
+                                                {/* <td>{sa.time_schedule}</td> */}
+                                                <td>
+                                                    {sa.start_time && sa.end_time ? `${sa.start_time} - ${sa.end_time}` : "No time schedule"}
+                                                </td>
+                                                <td>{sa.required_duty_hours} hours</td>
                                                 <td>
                                                     <Button
                                                         variant="success"
@@ -432,28 +446,33 @@ const Create = () => {
                                 }
                             }}
                         >
-                            <FormField
-                                label={"Firstname"}
-                                type={"text"}
-                                placeholder={"enter firstname"}
-                                value={firstname}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    if (/^[A-Za-z\s]*$/.test(value)) {
-                                        setFirstname(value);
-                                    }
-                                }}
-                            />
-
-                            <FormField
-                                label={"Lastname"}
-                                type={"text"}
-                                placeholder={"enter lastname"}
-                                value={lastname}
-                                onChange={(e) => {
-                                    setLastname(e.target.value);
-                                }}
-                            />
+                            <Row className="mb-3">
+                                <Col md={6}>
+                                    <FormField
+                                        label={"Firstname"}
+                                        type={"text"}
+                                        placeholder={"enter firstname"}
+                                        value={firstname}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (/^[A-Za-z\s]*$/.test(value)) {
+                                                setFirstname(value);
+                                            }
+                                        }}
+                                    />
+                                </Col>
+                                <Col md={6}>
+                                    <FormField
+                                        label={"Lastname"}
+                                        type={"text"}
+                                        placeholder={"enter lastname"}
+                                        value={lastname}
+                                        onChange={(e) => {
+                                            setLastname(e.target.value);
+                                        }}
+                                    />
+                                </Col>
+                            </Row>
 
                             <FormField
                                 label={"Student ID"}

@@ -144,10 +144,10 @@ const Dashboard = () => {
                 };
                 setAttendanceData(pieData);
             } else {
-                console.error("Unexpected API response format", response.data);
+                setAttendanceData(null);
             }
         } catch (error) {
-            console.error("Error fetching attendance data:", error);
+            setAttendanceData(null);
         }
     };
 
