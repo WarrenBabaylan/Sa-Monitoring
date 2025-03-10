@@ -165,7 +165,7 @@ const TrackTime = () => {
 
         const url = "http://localhost/nextjs/api/sa-monitoring/studentAssistant.php";
         const jsonData = {
-            saId: saId,
+            saId: user.user_id,
             dutyScheduleId: scheduleId,
             trackId: trackId, // Include trackId
         };

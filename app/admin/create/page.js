@@ -13,6 +13,7 @@ import {
     Spinner,
     Table,
     Card,
+    Pagination
 } from "react-bootstrap";
 import ReusableModal from "@/components/modal";
 import FormField from "@/components/form";
@@ -35,10 +36,6 @@ const Create = () => {
         }
     }, [user, isLoading, router, setIsLoading]);
 
-    useEffect(() => {
-        retrieveAllSa();
-    }, [])
-
     const handleResize = useCallback(() => {
         setIsSidebarVisible(window.innerWidth >= 768);
     }, []);
@@ -58,6 +55,9 @@ const Create = () => {
 
     const [getAllSa, setGetAllSa] = useState([]);
     const [getSaById, setGetSaById] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalRecords, setTotalRecords] = useState(0);
+    const recordsPerPage = 10;
 
     //------------------- Modal --------------------------//
     const [showModal, setShowModal] = useState(false);
@@ -84,19 +84,33 @@ const Create = () => {
         }, 900);
     };
 
-    const retrieveAllSa = async () => {
+    const retrieveAllSa = async (page) => {
         const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
 
         try {
             const response = await axios.get(url, {
                 params: {
-                    json: JSON.stringify({}),
+                    json: JSON.stringify({ limit: recordsPerPage, page }),
                     operation: "displayAllSa",
                 },
             });
-            setGetAllSa(response.data);
+
+            setGetAllSa(response.data.data);
+            setTotalRecords(response.data.totalRecords);
         } catch (error) {
-            setGetAllSa(null);
+            setGetAllSa([]);
+        }
+    };
+
+    useEffect(() => {
+        retrieveAllSa(currentPage);
+    }, [currentPage]);
+
+    const totalPages = totalRecords > 0 ? Math.ceil(totalRecords / recordsPerPage) : 1;
+
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
         }
     };
 
@@ -136,6 +150,16 @@ const Create = () => {
         }
     };
 
+    const formatStudentId = (id) => {
+        const regex = /^(\d{2})-?(\d{4})-?(\d{6})$/;
+        const match = id.match(regex);
+
+        if (match) {
+            return `${match[1]}-${match[2]}-${match[3]}`;
+        }
+        return id;
+    };
+
     const submit = async () => {
         if (!firstname && !lastname && !studentId) {
             showAlert("danger", "Please fill up all fields!");
@@ -151,15 +175,18 @@ const Create = () => {
             return;
         }
 
+        const formattedStudentId = formatStudentId(studentId);
+
         const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
 
         setPassword(lastname);
-        setUsername(studentId);
+        setUsername(formattedStudentId);
+
         const jsonData = {
             firstname: firstname,
             lastname: lastname,
-            studentId: studentId,
-            username: studentId,
+            studentId: formattedStudentId, // Ensure formatted student ID
+            username: formattedStudentId,  // Username should always be formatted
             password: lastname.toLowerCase(),
             adminId: user.user_id,
         };
@@ -370,6 +397,22 @@ const Create = () => {
                                 </tbody>
                             </Table>
                         </Card.Body>
+
+                        <Pagination className="mt-2 justify-content-center">
+                            <Pagination.First onClick={() => handlePageChange(1)} disabled={currentPage === 1} />
+                            <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
+
+                            {[...Array(totalPages)].map((_, index) => {
+                                const page = index + 1;
+                                return (
+                                    <Pagination.Item key={page} active={page === currentPage} onClick={() => handlePageChange(page)}>
+                                        {page}
+                                    </Pagination.Item>
+                                );
+                            })}
+                            <Pagination.Next onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
+                            <Pagination.Last onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages} />
+                        </Pagination>
                     </Card>
                 </Container>
             </div>
@@ -415,12 +458,12 @@ const Create = () => {
                             <FormField
                                 label={"Student ID"}
                                 type={"text"}
-                                placeholder={"enter student id"}
+                                placeholder={"Enter student ID"}
                                 value={studentId}
                                 onChange={(e) => {
                                     const value = e.target.value;
-                                    if (/^\d*$/.test(value)) {
-                                        // Allows only digits (0-9)
+                                    // Allow only numbers and dashes
+                                    if (/^[0-9-]*$/.test(value)) {
                                         setStudentId(value);
                                     }
                                 }}
