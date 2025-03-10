@@ -18,6 +18,8 @@ const AssignSchedule = () => {
     const { user, isLoading, setIsLoading } = useAuth();
     const searchParams = useSearchParams();
     const saId = searchParams.get("saId");
+    const start = searchParams.get("start");
+    const end = searchParams.get("end");
     const requiredDutyHours = searchParams.get("requiredDutyHours");
     const router = useRouter();
 
@@ -56,6 +58,22 @@ const AssignSchedule = () => {
             }
         }
     }, [requiredDutyHours, getDutyHours]);
+
+    useEffect(() => {
+        if (start && start !== "null") {
+            setStartTime(convertTo24HourFormat(start));
+        } else {
+            setStartTime("");
+        }
+    }, [start]);
+
+    useEffect(() => {
+        if (end && end !== "null") {
+            setEndTime(convertTo24HourFormat(end));
+        } else {
+            setEndTime("");
+        }
+    }, [end]);
 
     const [alertShow, setAlertShow] = useState({
         show: false,
@@ -174,7 +192,6 @@ const AssignSchedule = () => {
         if (modifier === "AM" && hours === "12") hours = "00";
         return `${hours}:${minutes}`;
     };
-
 
     if (isLoading) {
         return (
