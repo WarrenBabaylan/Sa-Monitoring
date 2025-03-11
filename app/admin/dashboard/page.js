@@ -40,7 +40,7 @@ const Dashboard = () => {
     useEffect(() => {
         if (!isLoading && (!user || user.role !== "admin")) {
             router.replace("/");
-        }
+        } 
     }, [user, isLoading, router]);
 
     useEffect(() => {

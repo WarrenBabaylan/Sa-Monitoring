@@ -73,8 +73,11 @@ const Create = () => {
     const [firstname, setFirstname] = useState("");
     const [lastname, setLastname] = useState("");
     const [studentId, setStudentId] = useState("");
+    const [email, setEmail] = useState("");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+
+    const [emailError, setEmailError] = useState("");
 
     const [alertShow, setAlertShow] = useState({
         show: false,
@@ -171,8 +174,94 @@ const Create = () => {
         return id;
     };
 
+    const validateEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Simple email regex
+        return emailRegex.test(email);
+    };
+
+    const handleEmailChange = (e) => {
+        const inputEmail = e.target.value;
+        setEmail(inputEmail);
+
+        if (!validateEmail(inputEmail)) {
+            setEmailError("Please enter a valid email address.");
+        } else {
+            setEmailError(""); // Clear error when valid
+        }
+    };
+
+    // const submit = async () => {
+    //     if (!firstname && !lastname && !studentId && !email) {
+    //         showAlert("danger", "Please fill up all fields!");
+    //         return;
+    //     } else if (!firstname) {
+    //         showAlert("warning", "Firstname is required!");
+    //         return;
+    //     } else if (!lastname) {
+    //         showAlert("warning", "Lastname is required!");
+    //         return;
+    //     } else if (!studentId) {
+    //         showAlert("warning", "Student Id is required!");
+    //         return;
+    //     } else if (!email) {
+    //         showAlert("warning", "Email is required");
+    //         return;
+    //     } else if (!validateEmail(email)) {
+    //         showAlert("danger", "Please enter a valid email address.");
+    //         return;
+    //     }
+
+    //     const formattedStudentId = formatStudentId(studentId);
+
+    //     const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+
+    //     setPassword(lastname);
+    //     setUsername(formattedStudentId);
+
+    //     const jsonData = {
+    //         firstname: firstname,
+    //         lastname: lastname,
+    //         studentId: formattedStudentId, // Ensure formatted student ID
+    //         email: email,
+    //         username: formattedStudentId,  // Username should always be formatted
+    //         password: lastname.toLowerCase(),
+    //         adminId: user.user_id,
+    //     };
+
+    //     console.log(jsonData);
+
+    //     const formData = new FormData();
+    //     formData.append("operation", "createSaAccount");
+    //     formData.append("json", JSON.stringify(jsonData));
+
+    //     try {
+    //         const response = await axios({
+    //             url: url,
+    //             method: "POST",
+    //             data: formData,
+    //         });
+
+    //         if (response.data == 1) {
+    //             showAlert("success", "Account created successfully!");
+    //             setFirstname("");
+    //             setLastname("");
+    //             setStudentId("");
+    //             setEmail("");
+    //             setUsername("");
+    //             setPassword("");
+    //             retrieveAllSa();
+    //         } else if (response.data == 2) {
+    //             showAlert("danger", "Username already exists!");
+    //         } else {
+    //             showAlert("warning", "Account creation failed!");
+    //         }
+    //     } catch (error) {
+    //         showAlert("danger", "Network error. Please try again.");
+    //     }
+    // };
+
     const submit = async () => {
-        if (!firstname && !lastname && !studentId) {
+        if (!firstname && !lastname && !studentId && !email) {
             showAlert("danger", "Please fill up all fields!");
             return;
         } else if (!firstname) {
@@ -183,6 +272,12 @@ const Create = () => {
             return;
         } else if (!studentId) {
             showAlert("warning", "Student Id is required!");
+            return;
+        } else if (!email) {
+            showAlert("warning", "Email is required!");
+            return;
+        } else if (!validateEmail(email)) {
+            showAlert("danger", "Please enter a valid email address.");
             return;
         }
 
@@ -196,8 +291,9 @@ const Create = () => {
         const jsonData = {
             firstname: firstname,
             lastname: lastname,
-            studentId: formattedStudentId, // Ensure formatted student ID
-            username: formattedStudentId,  // Username should always be formatted
+            studentId: formattedStudentId,
+            email: email,
+            username: formattedStudentId,
             password: lastname.toLowerCase(),
             adminId: user.user_id,
         };
@@ -220,11 +316,14 @@ const Create = () => {
                 setFirstname("");
                 setLastname("");
                 setStudentId("");
+                setEmail("");
                 setUsername("");
                 setPassword("");
                 retrieveAllSa();
             } else if (response.data == 2) {
                 showAlert("danger", "Username already exists!");
+            } else if (response.data == 3) {
+                showAlert("danger", "Invalid email address. Please enter a valid email.");
             } else {
                 showAlert("warning", "Account creation failed!");
             }
@@ -232,6 +331,7 @@ const Create = () => {
             showAlert("danger", "Network error. Please try again.");
         }
     };
+
 
     const filteredSa = (Array.isArray(getAllSa) ? getAllSa : []).filter(
         (sa) =>
@@ -351,6 +451,7 @@ const Create = () => {
                                         <th>Day Schedule</th>
                                         <th>Time Schedule</th>
                                         <th>Required Duty Hours</th>
+                                        <th>Email</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -386,11 +487,11 @@ const Create = () => {
                                                 <td style={{ padding: "12px" }}>{sa.student_id}</td>
                                                 <td style={{ padding: "12px" }}>{sa.sa_fullname}</td>
                                                 <td>{sa.day_names}</td>
-                                                {/* <td>{sa.time_schedule}</td> */}
                                                 <td>
                                                     {sa.start_time && sa.end_time ? `${sa.start_time} - ${sa.end_time}` : "No time schedule"}
                                                 </td>
                                                 <td>{sa.required_duty_hours} hours</td>
+                                                <td>{sa.email}</td>
                                                 <td>
                                                     <Button
                                                         variant="success"
@@ -487,6 +588,15 @@ const Create = () => {
                                     }
                                 }}
                             />
+
+                            <FormField
+                                label={"Email"}
+                                type={"text"}
+                                placeholder={"enter email"}
+                                value={email}
+                                onChange={handleEmailChange}
+                            />
+                            {emailError && <p style={{ color: "red", fontSize: "14px" }}>{emailError}</p>}
                         </Form>
                     </>
                 }

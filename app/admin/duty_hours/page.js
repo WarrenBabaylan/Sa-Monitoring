@@ -1,11 +1,12 @@
 "use client";
 import axios from "axios";
+import * as Icon from "react-bootstrap-icons";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import AdminNavbar from "@/components/admin/navbar";
 import { useLogout } from "@/components/logout";
 import { useAuth } from "@/components/useAuth";
-import { Container, Button, Spinner, Toast, ToastContainer } from "react-bootstrap";
+import { Container, Button, Spinner, Table, Form, Toast, ToastContainer } from "react-bootstrap";
 import FormField from "@/components/form";
 
 const DutyHours = () => {
@@ -15,6 +16,8 @@ const DutyHours = () => {
     const logout = useLogout();
 
     const [hours, setHours] = useState("");
+    const [dutyHoursList, setDutyHoursList] = useState([]);
+    const [selectedDutyHours, setSelectedDutyHours] = useState([]);
 
     useEffect(() => {
         if (!isLoading) {
@@ -51,41 +54,108 @@ const DutyHours = () => {
         setToast({ show: true, variant, message });
         setTimeout(() => {
             setToast((prev) => ({ ...prev, show: false }));
-        }, 5000);
+        }, 1000);
     };
 
-    const addDutyHours = async () => {
+    const checkDutyHours = async () => {
+        if (!hours) return;
+
+        const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+        const checkData = { requiredDutyHours: hours };
+
+        try {
+            const formData = new FormData();
+            formData.append("operation", "checkDutyHours");
+            formData.append("json", JSON.stringify(checkData));
+
+            const response = await axios.post(url, formData);
+
+            if (response.data.exists) {
+                showToast("warning", "Duty hours already exist.");
+                return;
+            }
+
+            const newEntry = {
+                id: Date.now(),
+                requiredDutyHours: hours,
+                adminId: user.user_id,
+            };
+
+            const updatedDutyHoursList = [...dutyHoursList, newEntry];
+            setDutyHoursList(updatedDutyHoursList);
+            sessionStorage.setItem("pendingDutyHours", JSON.stringify(updatedDutyHoursList));
+
+            setHours("");
+        } catch (error) {
+            console.error("Error checking duty hours:", error);
+            showToast("danger", "Network error. Please try again.");
+        }
+    };
+
+    useEffect(() => {
+        const storedDutyHours = sessionStorage.getItem("pendingDutyHours");
+        if (storedDutyHours) {
+            setDutyHoursList(JSON.parse(storedDutyHours));
+        }
+    }, []);
+
+    const removeDutyHours = (id) => {
+        setDutyHoursList(dutyHoursList.filter(entry => entry.id !== id));
+        setSelectedDutyHours(selectedDutyHours.filter(entryId => entryId !== id));
+    };
+
+    const toggleSelect = (id) => {
+        setSelectedDutyHours(prev =>
+            prev.includes(id) ? prev.filter(entryId => entryId !== id) : [...prev, id]
+        );
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedDutyHours.length === dutyHoursList.length) {
+            setSelectedDutyHours([]);
+        } else {
+            setSelectedDutyHours(dutyHoursList.map(entry => entry.id)); // Select all
+        }
+    };
+
+    const saveToBackend = async () => {
+        if (selectedDutyHours.length === 0) return;
+
+        const confirmAddDutyHours = confirm("Are you sure to add new duty hours?");
+        if (!confirmAddDutyHours) return;
+
         const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
 
-        const jsonData = {
-            requiredDutyHours: hours,
-            adminId: user.user_id,
-        };
-
-        console.log(jsonData);
+        const selectedData = dutyHoursList
+            .filter(entry => selectedDutyHours.includes(entry.id))
+            .map(entry => ({
+                requiredDutyHours: entry.requiredDutyHours,
+                adminId: user.user_id,
+            }));
 
         const formData = new FormData();
         formData.append("operation", "addDutyHours");
-        formData.append("json", JSON.stringify(jsonData));
+        formData.append("json", JSON.stringify(selectedData));
 
         try {
-            const response = await axios({
-                url: url,
-                method: "POST",
-                data: formData,
-            });
+            const response = await axios.post(url, formData);
 
             if (response.status !== 200) {
                 throw new Error("Server error");
             }
 
-            if (response.data == 1) {
+            const responseData = response.data;
+
+            if (responseData == 1) {
                 showToast("success", "Duty hours added successfully.");
-                setHours("");
-            } else if (response.data == 2) {
-                showToast("warning", "Duty hours already exist.");
+
+                const updatedList = dutyHoursList.filter(entry => !selectedDutyHours.includes(entry.id));
+                setDutyHoursList(updatedList);
+                setSelectedDutyHours([]);
+
+                sessionStorage.setItem("pendingDutyHours", JSON.stringify(updatedList));
             } else {
-                showToast("warning", "Duty hours added failed.");
+                showToast("warning", "Failed to add duty hours.");
             }
         } catch (error) {
             console.error("Error adding duty hours:", error);
@@ -147,9 +217,56 @@ const DutyHours = () => {
                         }}
                     />
 
-                    <Button variant="primary" onClick={addDutyHours} disabled={!hours}>
+                    <Button variant="primary" onClick={checkDutyHours} disabled={!hours}>
                         Submit
                     </Button>
+
+                    {dutyHoursList.length > 0 && (
+                        <>
+                            <h3 className="mt-4">Pending Duty Hours</h3>
+                            <Table striped bordered hover>
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <Form.Check
+                                                type="checkbox"
+                                                checked={selectedDutyHours.length === dutyHoursList.length && dutyHoursList.length > 0}
+                                                onChange={toggleSelectAll}
+                                            />
+                                        </th>
+                                        <th>Duty Hours</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {dutyHoursList.map((entry) => (
+                                        <tr key={entry.id}>
+                                            <td>
+                                                <Form.Check
+                                                    type="checkbox"
+                                                    checked={selectedDutyHours.includes(entry.id)}
+                                                    onChange={() => toggleSelect(entry.id)}
+                                                />
+                                            </td>
+                                            <td>{entry.requiredDutyHours}</td>
+                                            <td>
+                                                <Button variant="danger" onClick={() => removeDutyHours(entry.id)}>
+                                                    <Icon.Trash color="white" size={20} />
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+
+                            {selectedDutyHours.length > 0 && (
+                                <Button variant="success" onClick={saveToBackend}>
+                                    Save Selected
+                                </Button>
+                            )}
+                        </>
+                    )}
                 </Container>
             </div>
 
@@ -157,7 +274,7 @@ const DutyHours = () => {
                 <Toast
                     show={toast.show}
                     onClose={() => setToast({ ...toast, show: false })}
-                    delay={5000}
+                    delay={1000}
                     autohide
                     bg={toast.variant}
                 >
