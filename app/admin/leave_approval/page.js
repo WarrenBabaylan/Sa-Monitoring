@@ -311,76 +311,69 @@ const LeaveApproval = () => {
                 title={"Leave Approval"}
                 bodyContent={
                     <>
-                        <Table>
-                            <tbody>
-                                <tr>
-                                    <td>Date</td>
-                                    <td>{date}</td>
-                                </tr>
-                                <tr>
-                                    <td>Student Assistant</td>
-                                    <td>{saFullname}</td>
-                                </tr>
-                                <tr>
-                                    <td>Leave Type</td>
-                                    <td>{leaveType}</td>
-                                </tr>
-                                <tr>
-                                    <td>Reason</td>
-                                    <td>
-                                        <Form.Group className="mb-3">
+                        <Card className="shadow-sm rounded-3 p-3">
+                            <Table borderless className="align-middle mb-0">
+                                <tbody>
+                                    <tr>
+                                        <td className="fw-semibold text-muted text-nowrap">📅 Date</td>
+                                        <td className="text-dark">{date}</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="fw-semibold text-muted text-nowrap">👤 Student Assistant</td>
+                                        <td className="text-dark">{saFullname}</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="fw-semibold text-muted text-nowrap">📋 Leave Type</td>
+                                        <td className="text-dark">{leaveType}</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="fw-semibold text-muted text-nowrap">📝 Reason</td>
+                                        <td>
                                             <Form.Control
                                                 as="textarea"
                                                 rows={3}
-                                                placeholder="Enter reason for the leave..."
+                                                placeholder="No reason provided"
                                                 value={reason}
-                                                onChange={(e) => setReason(e.target.value)}
-                                                className="rounded border-1"
                                                 readOnly
+                                                className="form-control-plaintext border p-2 rounded bg-light"
                                             />
-                                        </Form.Group>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Approved Status</td>
-                                    <td>
-                                        <Form.Select
-                                            value={approvedStatus}
-                                            onChange={selectedApprovedStatus}
-                                            className="mb-3"
-                                        >
-                                            <option value="">Select Approve Status</option>
-                                            {getApprovedStatus.map((approvedStatus, index) => {
-                                                return (
-                                                    <option
-                                                        key={index}
-                                                        value={approvedStatus.approved_status_id}
-                                                    >
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="fw-semibold text-muted text-nowrap">✅ Approved Status</td>
+                                        <td>
+                                            <Form.Select
+                                                value={approvedStatus}
+                                                onChange={selectedApprovedStatus}
+                                                className="form-control shadow-sm"
+                                            >
+                                                <option value="">Select Approve Status</option>
+                                                {getApprovedStatus.map((approvedStatus, index) => (
+                                                    <option key={index} value={approvedStatus.approved_status_id}>
                                                         {approvedStatus.approved_status_name}
                                                     </option>
-                                                );
-                                            })}
-                                        </Form.Select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Comment</td>
-                                    <td>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Reason</Form.Label>
-                                            <Form.Control
-                                                as="textarea"
-                                                rows={3}
-                                                placeholder="Enter reason for the leave..."
-                                                value={adminComment}
-                                                onChange={(e) => setAdminComment(e.target.value)}
-                                                className="rounded border-1"
-                                            />
-                                        </Form.Group>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </Table>
+                                                ))}
+                                            </Form.Select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="fw-semibold text-muted text-nowrap">💬 Admin Comment</td>
+                                        <td>
+                                            <Form.Group>
+                                                <Form.Control
+                                                    as="textarea"
+                                                    rows={3}
+                                                    placeholder="Enter comment..."
+                                                    value={adminComment}
+                                                    onChange={(e) => setAdminComment(e.target.value)}
+                                                    className="border p-2 rounded shadow-sm"
+                                                />
+                                            </Form.Group>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </Table>
+                        </Card>
                     </>
                 }
                 footerContent={

@@ -10,6 +10,9 @@ import {
     Card,
     Badge,
     Spinner,
+    Form,
+    Row,
+    Col
 } from "react-bootstrap";
 import * as Icon from "react-bootstrap-icons";
 import FormField from "@/components/form";
@@ -150,6 +153,10 @@ const AssignSchedule = () => {
     };
 
     const submitAssignSched = async () => {
+
+        const confirmAssignSchedule = confirm("Are you sure you want to submit?");
+        if (!confirmAssignSchedule) return;
+
         const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
 
         const jsonData = {
@@ -209,27 +216,20 @@ const AssignSchedule = () => {
 
     return (
         <Container className="d-flex justify-content-center align-items-center vh-100">
-            <Card style={{ width: "100%", maxWidth: "500px", padding: "20px" }}>
-                <div
-                    className="d-flex"
-                    style={{
-                        position: "absolute",
-                        top: "10px",
-                        left: "10px",
-                    }}
-                >
+            <Card className="shadow-lg p-4 rounded-4" style={{ width: "100%", maxWidth: "500px" }}>
+                <div className="position-absolute top-0 start-0 p-3">
                     <Icon.ArrowLeft
                         size={30}
-                        style={{ cursor: "pointer", color: "black" }}
+                        className="text-primary"
+                        style={{ cursor: "pointer" }}
                         onClick={() => router.push("/admin/create")}
                     />
                 </div>
 
-                <div className="text-center mt-4">
-                    <h1 className="mb-4">Assign Schedule</h1>
+                <div className="text-center">
+                    <h2 className="fw-bold text-dark mb-3">Assign Schedule</h2>
                 </div>
 
-                {/* Alert */}
                 {alertShow.show && (
                     <Modal
                         show={alertShow.show}
@@ -239,24 +239,19 @@ const AssignSchedule = () => {
                         keyboard={false}
                     >
                         <Modal.Body
+                            className="text-center p-4 rounded-4"
                             style={{
                                 backgroundColor: "#f0f0f5",
-                                borderRadius: "12px",
                                 boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.3)",
-                                padding: "20px",
-                                textAlign: "center",
                             }}
                         >
                             <h5
-                                style={{
-                                    color:
-                                        alertShow.variant === "danger"
-                                            ? "#d9534f"
-                                            : alertShow.variant === "warning"
-                                                ? "#f0ad4e"
-                                                : "#5cb85c",
-                                    fontWeight: "bold",
-                                }}
+                                className={`fw-bold ${alertShow.variant === "danger"
+                                    ? "text-danger"
+                                    : alertShow.variant === "warning"
+                                        ? "text-warning"
+                                        : "text-success"
+                                    }`}
                             >
                                 {alertShow.message}
                             </h5>
@@ -264,84 +259,69 @@ const AssignSchedule = () => {
                     </Modal>
                 )}
 
-                <FormField
-                    label={"Days"}
-                    as={"select"}
-                    value={days}
-                    onChange={handleSelectionDay}
-                >
-                    <option value="">Select Day</option>
-                    {!Array.isArray(getDays) || getDays.length === 0 ? (
-                        <option disabled>No results.</option>
-                    ) : (
-                        <>
-                            {getDays.map((day, index) => (
+                <Form>
+                    <FormField label="Days" as="select" value={days} onChange={handleSelectionDay}>
+                        <option value="">Select Day</option>
+                        {!Array.isArray(getDays) || getDays.length === 0 ? (
+                            <option disabled>No results.</option>
+                        ) : (
+                            getDays.map((day, index) => (
                                 <option key={index} value={day.day_id}>
                                     {day.day_name}
                                 </option>
+                            ))
+                        )}
+                    </FormField>
+
+                    {selectedDays.length > 0 && (
+                        <div className="mb-3 d-flex flex-wrap">
+                            {selectedDays.map((day) => (
+                                <Badge
+                                    key={day.day_id}
+                                    pill
+                                    bg="primary"
+                                    className="me-2 mb-2 p-2 d-flex align-items-center"
+                                    style={{ cursor: "pointer", fontSize: "14px" }}
+                                    onClick={() => removeDay(day.day_id)}
+                                >
+                                    {day.day_name}
+                                    <Icon.X size={14} className="ms-2" />
+                                </Badge>
                             ))}
-                        </>
+                        </div>
                     )}
-                </FormField>
 
-                {/* Display Selected Days */}
-                <div className="mb-2">
-                    {selectedDays.map((day) => (
-                        <Badge
-                            key={day.day_id}
-                            pill
-                            bg="primary"
-                            className="me-2"
-                            style={{ cursor: "pointer" }}
-                            onClick={() => removeDay(day.day_id)}
-                        >
-                            {day.day_name} <Icon.X size={12} />
-                        </Badge>
-                    ))}
-                </div>
+                    <Row>
+                        <Col>
+                            <FormField label="Start Time" type="time" value={startTime} onChange={handleStartTimeChange} />
+                        </Col>
+                        <Col>
+                            <FormField label="End Time" type="time" value={endTime} onChange={handleEndTimeChange} />
+                        </Col>
+                    </Row>
 
-                <FormField
-                    label={"Start Time"}
-                    type={"time"}
-                    value={startTime}
-                    onChange={handleStartTimeChange}
-                />
+                    <FormField label="Select Duty Hours" as="select" value={dutyHours} onChange={selectedDutyHours}>
+                        <option value="">Select Duty Hours</option>
+                        {!Array.isArray(getDutyHours) || getDutyHours.length === 0 ? (
+                            <option disabled>No results.</option>
+                        ) : (
+                            getDutyHours.map((hours, index) => (
+                                <option key={index} value={hours.duty_hours_id}>
+                                    {hours.required_duty_hours} hours
+                                </option>
+                            ))
+                        )}
+                    </FormField>
 
-                <FormField
-                    label={"End Time"}
-                    type={"time"}
-                    value={endTime}
-                    onChange={handleEndTimeChange}
-                />
-
-                <FormField
-                    label={"Select duty hours"}
-                    as={"select"}
-                    value={dutyHours}
-                    onChange={selectedDutyHours}
-                >
-                    <option value="">Select Duty Hours</option>
-                    {!Array.isArray(getDutyHours) || getDutyHours.length === 0 ? (
-                        <option disabled>No results.</option>
-                    ) : (
-                        getDutyHours.map((hours, index) => (
-                            <option key={index} value={hours.duty_hours_id}>
-                                {hours.required_duty_hours} hours
-                            </option>
-                        ))
-                    )}
-                </FormField>
-
-                <Button
-                    variant="primary"
-                    className="mt-4 w-100"
-                    onClick={submitAssignSched}
-                    disabled={
-                        selectedDays.length === 0 || !startTime || !endTime || !dutyHours
-                    }
-                >
-                    Submit
-                </Button>
+                    <Button
+                        variant="primary"
+                        className="mt-4 w-100 rounded-3 fw-bold py-2"
+                        onClick={submitAssignSched}
+                        disabled={selectedDays.length === 0 || !startTime || !endTime || !dutyHours}
+                    >
+                        Submit
+                    </Button>
+                </Form>
             </Card>
         </Container>
     );

@@ -105,6 +105,7 @@ const Create = () => {
 
             setGetAllSa(response.data.data);
             setTotalRecords(response.data.totalRecords);
+            console.log(response.data.data);
         } catch (error) {
             setGetAllSa([]);
         }
@@ -190,77 +191,11 @@ const Create = () => {
         }
     };
 
-    // const submit = async () => {
-    //     if (!firstname && !lastname && !studentId && !email) {
-    //         showAlert("danger", "Please fill up all fields!");
-    //         return;
-    //     } else if (!firstname) {
-    //         showAlert("warning", "Firstname is required!");
-    //         return;
-    //     } else if (!lastname) {
-    //         showAlert("warning", "Lastname is required!");
-    //         return;
-    //     } else if (!studentId) {
-    //         showAlert("warning", "Student Id is required!");
-    //         return;
-    //     } else if (!email) {
-    //         showAlert("warning", "Email is required");
-    //         return;
-    //     } else if (!validateEmail(email)) {
-    //         showAlert("danger", "Please enter a valid email address.");
-    //         return;
-    //     }
-
-    //     const formattedStudentId = formatStudentId(studentId);
-
-    //     const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
-
-    //     setPassword(lastname);
-    //     setUsername(formattedStudentId);
-
-    //     const jsonData = {
-    //         firstname: firstname,
-    //         lastname: lastname,
-    //         studentId: formattedStudentId, // Ensure formatted student ID
-    //         email: email,
-    //         username: formattedStudentId,  // Username should always be formatted
-    //         password: lastname.toLowerCase(),
-    //         adminId: user.user_id,
-    //     };
-
-    //     console.log(jsonData);
-
-    //     const formData = new FormData();
-    //     formData.append("operation", "createSaAccount");
-    //     formData.append("json", JSON.stringify(jsonData));
-
-    //     try {
-    //         const response = await axios({
-    //             url: url,
-    //             method: "POST",
-    //             data: formData,
-    //         });
-
-    //         if (response.data == 1) {
-    //             showAlert("success", "Account created successfully!");
-    //             setFirstname("");
-    //             setLastname("");
-    //             setStudentId("");
-    //             setEmail("");
-    //             setUsername("");
-    //             setPassword("");
-    //             retrieveAllSa();
-    //         } else if (response.data == 2) {
-    //             showAlert("danger", "Username already exists!");
-    //         } else {
-    //             showAlert("warning", "Account creation failed!");
-    //         }
-    //     } catch (error) {
-    //         showAlert("danger", "Network error. Please try again.");
-    //     }
-    // };
-
     const submit = async () => {
+
+        const confirmSubmit = confirm("Are you sure you want to submit");
+        if (!confirmSubmit) return;
+
         if (!firstname && !lastname && !studentId && !email) {
             showAlert("danger", "Please fill up all fields!");
             return;
@@ -298,8 +233,6 @@ const Create = () => {
             adminId: user.user_id,
         };
 
-        console.log(jsonData);
-
         const formData = new FormData();
         formData.append("operation", "createSaAccount");
         formData.append("json", JSON.stringify(jsonData));
@@ -331,7 +264,6 @@ const Create = () => {
             showAlert("danger", "Network error. Please try again.");
         }
     };
-
 
     const filteredSa = (Array.isArray(getAllSa) ? getAllSa : []).filter(
         (sa) =>
@@ -458,14 +390,14 @@ const Create = () => {
                                 <tbody>
                                     {loading ? (
                                         <tr>
-                                            <td colSpan="6" className="text-center text-muted">
+                                            <td colSpan="7" className="text-center text-muted">
                                                 Loading data, please wait...
                                             </td>
                                         </tr>
                                     ) : !Array.isArray(getAllSa) ? (
                                         <tr>
                                             <td
-                                                colSpan="6"
+                                                colSpan="7"
                                                 className="text-center text-danger fw-bold"
                                             >
                                                 No data available. Please wait or check your connection.
@@ -473,7 +405,7 @@ const Create = () => {
                                         </tr>
                                     ) : filteredSa.length === 0 ? (
                                         <tr>
-                                            <td colSpan="6" className="text-center text-muted">
+                                            <td colSpan="7" className="text-center text-muted">
                                                 No student assistants available.
                                             </td>
                                         </tr>
@@ -490,7 +422,7 @@ const Create = () => {
                                                 <td>
                                                     {sa.start_time && sa.end_time ? `${sa.start_time} - ${sa.end_time}` : "No time schedule"}
                                                 </td>
-                                                <td>{sa.required_duty_hours} hours</td>
+                                                <td>{sa.required_duty_hours}</td>
                                                 <td>{sa.email}</td>
                                                 <td>
                                                     <Button

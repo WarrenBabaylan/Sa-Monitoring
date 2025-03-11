@@ -83,8 +83,6 @@ const Login = () => {
             captcha_answer: userCaptcha,
         };
 
-        console.log(jsonData);
-
         const formData = new FormData();
         formData.append("operation", "login");
         formData.append("json", JSON.stringify(jsonData));
@@ -102,9 +100,11 @@ const Login = () => {
                 if (response.data.role === "admin") {
                     showToast("success", "Login successful!");
                     router.push("/admin/dashboard");
+                    console.log(response.data);
                 } else if (response.data.role === "student-assistant") {
                     showToast("success", "Login successful!");
                     router.push("/student-assistant/dashboard");
+                    console.log(response.data);
                 }
             } else {
                 if (response.data.message === "Username is incorrect") {

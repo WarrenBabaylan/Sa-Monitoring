@@ -140,6 +140,33 @@ const DutyHours = () => {
         setStartTime(saTimeIn.time_start);
         setTime(saTimeIn.time_in);
         setSaFullname(saTimeIn.sa_fullname);
+
+        const convertToMinutes = (timeStr) => {
+            const [time, modifier] = timeStr.split(" ");
+            let [hours, minutes] = time.split(":").map(Number);
+
+            if (modifier === "PM" && hours !== 12) {
+                hours += 12;
+            } else if (modifier === "AM" && hours === 12) {
+                hours = 0;
+            }
+
+            return hours * 60 + minutes;
+        };
+
+        const timeStartMinutes = convertToMinutes(saTimeIn.time_start);
+        const timeInMinutes = convertToMinutes(saTimeIn.time_in);
+
+        let statusId = "";
+        if (timeInMinutes >= timeStartMinutes + 30) {
+            const lateStatus = getStatus.find((s) => s.status_name === "Late");
+            statusId = lateStatus ? lateStatus.status_id : "";
+        } else {
+            const presentStatus = getStatus.find((s) => s.status_name === "Present");
+            statusId = presentStatus ? presentStatus.status_id : "";
+        }
+
+        setStatus(statusId);
     };
 
     const showApprovedModal = (timeInId) => {
@@ -148,6 +175,10 @@ const DutyHours = () => {
     };
 
     const saveChanges = async () => {
+
+        const confirmApproved = confirm("Are you sure you want to approved?");
+        if (!confirmApproved) return;
+
         const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
 
         const jsonData = {
@@ -221,7 +252,7 @@ const DutyHours = () => {
 
                     <Card className="shadow rounded-3 mt-3">
                         <Card.Header className="bg-primary text-white">
-                            <h5>Attendace Review</h5>
+                            <h5>Attendance Review</h5>
                         </Card.Header>
                         <Card.Body>
                             <Table
@@ -273,7 +304,7 @@ const DutyHours = () => {
                                             >
                                                 <td style={{ padding: "12px" }}>{timeIn.formatted_date}</td>
                                                 <td>{timeIn.day_name}</td>
-                                                <td>{timeIn.time_schedule}</td>
+                                                <td>{timeIn.time_start} - {timeIn.time_end}</td>
                                                 <td>{timeIn.time_in}</td>
                                                 <td>{timeIn.time_out}</td>
                                                 <td>
@@ -331,73 +362,68 @@ const DutyHours = () => {
                 handleCloseModal={handleCloseModal}
                 title={"Time-in Approval"}
                 bodyContent={
-                    <>
-                        <Table>
-                            <tbody>
-                                <tr>
-                                    <td>Date</td>
-                                    <td>{date}</td>
-                                </tr>
-                                <tr>
-                                    <td>Day Schedule</td>
-                                    <td>{daySched}</td>
-                                </tr>
-                                <tr>
-                                    <td>Time Start</td>
-                                    <td>{startTime}</td>
-                                </tr>
-                                <tr>
-                                    <td>Time In</td>
-                                    <td>{time}</td>
-                                </tr>
-                                <tr>
-                                    <td>Student Assistant</td>
-                                    <td>{saFullname}</td>
-                                </tr>
-                                <tr>
-                                    <td>Approved Status</td>
-                                    <td>
-                                        <Form.Select
-                                            value={approvedStatus}
-                                            onChange={selectedApprovedStatus}
-                                            className="mb-3"
-                                        >
-                                            <option value="">Select Approve Status</option>
-                                            {getApprovedStatus.map((approvedStatus, index) => {
-                                                return (
-                                                    <option
-                                                        key={index}
-                                                        value={approvedStatus.approved_status_id}
-                                                    >
+                    <div className="modal-body-content">
+                        <Card className="shadow-sm rounded-3 p-3">
+                            <Table borderless className="align-middle mb-0">
+                                <tbody>
+                                    <tr>
+                                        <td className="fw-semibold text-muted text-nowrap">📅 Date</td>
+                                        <td className="text-dark">{date}</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="fw-semibold text-muted text-nowrap">📆 Day Schedule</td>
+                                        <td className="text-dark">{daySched}</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="fw-semibold text-muted text-nowrap">⏰ Time Start</td>
+                                        <td className="text-dark">{startTime}</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="fw-semibold text-muted text-nowrap">⏳ Time In</td>
+                                        <td className="text-dark">{time}</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="fw-semibold text-muted text-nowrap">👤 Student Assistant</td>
+                                        <td className="text-dark">{saFullname}</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="fw-semibold text-muted text-nowrap">✅ Approved Status</td>
+                                        <td>
+                                            <Form.Select
+                                                value={approvedStatus}
+                                                onChange={selectedApprovedStatus}
+                                                className="form-control shadow-sm"
+                                            >
+                                                <option value="">Select Approve Status</option>
+                                                {getApprovedStatus.map((approvedStatus, index) => (
+                                                    <option key={index} value={approvedStatus.approved_status_id}>
                                                         {approvedStatus.approved_status_name}
                                                     </option>
-                                                );
-                                            })}
-                                        </Form.Select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Status</td>
-                                    <td>
-                                        <Form.Select
-                                            value={status}
-                                            onChange={selectedStatus}
-                                            className="mb-3"
-                                        >
-                                            <option value="">Select Status</option>
-                                            {getStatus.map((status, index) => {
-                                                return (
+                                                ))}
+                                            </Form.Select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="fw-semibold text-muted text-nowrap">📌 Status</td>
+                                        <td>
+                                            <Form.Select
+                                                value={status}
+                                                onChange={selectedStatus}
+                                                className="form-control shadow-sm"
+                                            >
+                                                <option value="">Select Status</option>
+                                                {getStatus.map((status, index) => (
                                                     <option key={index} value={status.status_id}>
                                                         {status.status_name}
                                                     </option>
-                                                );
-                                            })}
-                                        </Form.Select>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </Table>
-                    </>
+                                                ))}
+                                            </Form.Select>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </Table>
+                        </Card>
+                    </div>
                 }
                 footerContent={
                     <>

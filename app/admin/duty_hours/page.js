@@ -223,7 +223,7 @@ const DutyHours = () => {
 
                     {dutyHoursList.length > 0 && (
                         <>
-                            <h3 className="mt-4">Pending Duty Hours</h3>
+                            <h5 className="mt-4">Pending Duty Hours</h5>
                             <Table striped bordered hover>
                                 <thead>
                                     <tr>
@@ -262,7 +262,7 @@ const DutyHours = () => {
 
                             {selectedDutyHours.length > 0 && (
                                 <Button variant="success" onClick={saveToBackend}>
-                                    Save Selected
+                                    Save
                                 </Button>
                             )}
                         </>
