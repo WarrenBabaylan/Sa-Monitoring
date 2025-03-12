@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import AdminNavbar from "@/components/admin/navbar";
 import { useLogout } from "@/components/logout";
 import { useAuth } from "@/components/useAuth";
-import { Container, Button, Spinner, Table, Form, Toast, ToastContainer } from "react-bootstrap";
+import { Container, Button, Spinner, Table, Form, Card, Toast, ToastContainer } from "react-bootstrap";
 import FormField from "@/components/form";
 
 const DutyHours = () => {
@@ -100,8 +100,11 @@ const DutyHours = () => {
     }, []);
 
     const removeDutyHours = (id) => {
-        setDutyHoursList(dutyHoursList.filter(entry => entry.id !== id));
+        const updatedList = dutyHoursList.filter(entry => entry.id !== id);
+        setDutyHoursList(updatedList);
         setSelectedDutyHours(selectedDutyHours.filter(entryId => entryId !== id));
+
+        sessionStorage.setItem("pendingDutyHours", JSON.stringify(updatedList));
     };
 
     const toggleSelect = (id) => {
@@ -224,41 +227,54 @@ const DutyHours = () => {
                     {dutyHoursList.length > 0 && (
                         <>
                             <h5 className="mt-4">Pending Duty Hours</h5>
-                            <Table striped bordered hover>
-                                <thead>
-                                    <tr>
-                                        <th>
-                                            <Form.Check
-                                                type="checkbox"
-                                                checked={selectedDutyHours.length === dutyHoursList.length && dutyHoursList.length > 0}
-                                                onChange={toggleSelectAll}
-                                            />
-                                        </th>
-                                        <th>Duty Hours</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    {dutyHoursList.map((entry) => (
-                                        <tr key={entry.id}>
-                                            <td>
+                            <Card className="shadow-sm rounded-3 p-3">
+                                <Table striped bordered hover responsive className="text-center align-middle mb-0">
+                                    <thead className="bg-primary text-white">
+                                        <tr>
+                                            <th style={{ width: "5%" }}>
                                                 <Form.Check
                                                     type="checkbox"
-                                                    checked={selectedDutyHours.includes(entry.id)}
-                                                    onChange={() => toggleSelect(entry.id)}
+                                                    checked={selectedDutyHours.length === dutyHoursList.length && dutyHoursList.length > 0}
+                                                    onChange={toggleSelectAll}
+                                                    className="form-check-lg"
                                                 />
-                                            </td>
-                                            <td>{entry.requiredDutyHours}</td>
-                                            <td>
-                                                <Button variant="danger" onClick={() => removeDutyHours(entry.id)}>
-                                                    <Icon.Trash color="white" size={20} />
-                                                </Button>
-                                            </td>
+                                            </th>
+                                            <th>Duty Hours</th>
+                                            <th>Action</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
+                                    </thead>
+                                    <tbody>
+                                        {dutyHoursList.length === 0 ? (
+                                            <tr>
+                                                <td colSpan="3" className="text-muted py-3">No duty hours available.</td>
+                                            </tr>
+                                        ) : (
+                                            dutyHoursList.map((entry) => (
+                                                <tr key={entry.id}>
+                                                    <td>
+                                                        <Form.Check
+                                                            type="checkbox"
+                                                            checked={selectedDutyHours.includes(entry.id)}
+                                                            onChange={() => toggleSelect(entry.id)}
+                                                            className="form-check-lg"
+                                                        />
+                                                    </td>
+                                                    <td>{entry.requiredDutyHours} hours</td>
+                                                    <td className="text-end">
+                                                        <Button
+                                                            variant="danger"
+                                                            className="d-flex align-items-center px-3 shadow-sm rounded"
+                                                            onClick={() => removeDutyHours(entry.id)}
+                                                        >
+                                                            <Icon.Trash color="white" size={18} className="me-1" /> Remove
+                                                        </Button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </Table>
+                            </Card>
 
                             {selectedDutyHours.length > 0 && (
                                 <Button variant="success" onClick={saveToBackend}>

@@ -53,9 +53,9 @@ const Create = () => {
     }, []);
 
     const [saId, setSaId] = useState("");
-    const [requiredDutyHours, setRequiredDutyHours] = useState("");
     const [start, setStart] = useState("");
     const [end, setEnd] = useState("");
+    const [requiredDutyHours, setRequiredDutyHours] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
 
     const [getAllSa, setGetAllSa] = useState([]);
@@ -157,11 +157,26 @@ const Create = () => {
         }
     };
 
+    // const showAssignSched = async (saId) => {
+    //     const found = await retrieveSaById(saId);
+    //     if (found) {
+    //         router.push(`/admin/create/assign?saId=${found.saId}&requiredDutyHours=${found.requiredDutyHours}&start=${found.start}&end=${found.end}`);
+    //     }
+    // };
+
     const showAssignSched = async (saId) => {
         const found = await retrieveSaById(saId);
         if (found) {
-            //router.push(`/admin/create/assign?saId=${saId}`);
-            router.push(`/admin/create/assign?saId=${found.saId}&requiredDutyHours=${found.requiredDutyHours}&start=${found.start}&end=${found.end}`);
+
+            const jsonData = {
+                saId: found.saId,
+                requiredDutyHours: found.requiredDutyHours,
+                start: found.start,
+                end: found.end
+            }
+            sessionStorage.setItem("assignSchedData", JSON.stringify(jsonData));
+            console.log(found);
+            router.push("/admin/create/assign");
         }
     };
 
@@ -176,7 +191,7 @@ const Create = () => {
     };
 
     const validateEmail = (email) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Simple email regex
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     };
 
@@ -187,7 +202,7 @@ const Create = () => {
         if (!validateEmail(inputEmail)) {
             setEmailError("Please enter a valid email address.");
         } else {
-            setEmailError(""); // Clear error when valid
+            setEmailError("");
         }
     };
 
@@ -422,7 +437,11 @@ const Create = () => {
                                                 <td>
                                                     {sa.start_time && sa.end_time ? `${sa.start_time} - ${sa.end_time}` : "No time schedule"}
                                                 </td>
-                                                <td>{sa.required_duty_hours}</td>
+                                                <td>
+                                                    {sa.required_duty_hours === "No duty hours"
+                                                        ? "No duty hours"
+                                                        : `${sa.required_duty_hours} hours`}
+                                                </td>
                                                 <td>{sa.email}</td>
                                                 <td>
                                                     <Button

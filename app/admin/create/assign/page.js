@@ -19,12 +19,14 @@ import FormField from "@/components/form";
 
 const AssignSchedule = () => {
     const { user, isLoading, setIsLoading } = useAuth();
-    const searchParams = useSearchParams();
-    const saId = searchParams.get("saId");
-    const start = searchParams.get("start");
-    const end = searchParams.get("end");
-    const requiredDutyHours = searchParams.get("requiredDutyHours");
+    // const searchParams = useSearchParams();
+    // const saId = searchParams.get("saId");
+    // const start = searchParams.get("start");
+    // const end = searchParams.get("end");
+    // const requiredDutyHours = searchParams.get("requiredDutyHours");
     const router = useRouter();
+
+    const [saId, setSaId] = useState("");
 
     useEffect(() => {
         if (!isLoading) {
@@ -46,37 +48,88 @@ const AssignSchedule = () => {
     const [endTime, setEndTime] = useState("");
     const [dutyHours, setDutyHours] = useState("");
 
+    const [requiredDutyHours, setRequiredDutyHours] = useState(null);
+
+    useEffect(() => {
+        const storedData = sessionStorage.getItem("assignSchedData");
+        if (storedData) {
+            const { saId, requiredDutyHours, start, end } = JSON.parse(storedData);
+            setSaId(saId);
+            setRequiredDutyHours(requiredDutyHours); // Store requiredDutyHours in state
+
+            if (requiredDutyHours && Array.isArray(getDutyHours)) {
+                const matchingOption = getDutyHours.find(
+                    (hours) => hours.required_duty_hours == requiredDutyHours
+                );
+                if (matchingOption) {
+                    setDutyHours(matchingOption.duty_hours_id);
+                }
+            }
+
+            if (start && start !== "null") {
+                setStartTime(convertTo24HourFormat(start));
+            }
+            if (end && end !== "null") {
+                setEndTime(convertTo24HourFormat(end));
+            }
+        }
+    }, [getDutyHours]);
+
+    // useEffect(() => {
+    //     const storedData = sessionStorage.getItem("assignSchedData");
+    //     if (storedData) {
+    //         const { saId, requiredDutyHours, start, end } = JSON.parse(storedData);
+    //         setSaId(saId);
+
+    //         if (requiredDutyHours && Array.isArray(getDutyHours)) {
+    //             const matchingOption = getDutyHours.find(
+    //                 (hours) => hours.required_duty_hours == requiredDutyHours
+    //             );
+    //             if (matchingOption) {
+    //                 setDutyHours(matchingOption.duty_hours_id);
+    //             }
+    //         }
+
+    //         if (start && start !== "null") {
+    //             setStartTime(convertTo24HourFormat(start));
+    //         }
+    //         if (end && end !== "null") {
+    //             setEndTime(convertTo24HourFormat(end));
+    //         }
+    //     }
+    // }, [getDutyHours]);
+
     useEffect(() => {
         retrieveDays();
         retrieveDutyHours();
     }, []);
 
-    useEffect(() => {
-        if (requiredDutyHours && Array.isArray(getDutyHours)) {
-            const matchingOption = getDutyHours.find(
-                (hours) => hours.required_duty_hours == requiredDutyHours
-            );
-            if (matchingOption) {
-                setDutyHours(matchingOption.duty_hours_id);
-            }
-        }
-    }, [requiredDutyHours, getDutyHours]);
+    // useEffect(() => {
+    //     if (requiredDutyHours && Array.isArray(getDutyHours)) {
+    //         const matchingOption = getDutyHours.find(
+    //             (hours) => hours.required_duty_hours == requiredDutyHours
+    //         );
+    //         if (matchingOption) {
+    //             setDutyHours(matchingOption.duty_hours_id);
+    //         }
+    //     }
+    // }, [requiredDutyHours, getDutyHours]);
 
-    useEffect(() => {
-        if (start && start !== "null") {
-            setStartTime(convertTo24HourFormat(start));
-        } else {
-            setStartTime("");
-        }
-    }, [start]);
+    // useEffect(() => {
+    //     if (start && start !== "null") {
+    //         setStartTime(convertTo24HourFormat(start));
+    //     } else {
+    //         setStartTime("");
+    //     }
+    // }, [start]);
 
-    useEffect(() => {
-        if (end && end !== "null") {
-            setEndTime(convertTo24HourFormat(end));
-        } else {
-            setEndTime("");
-        }
-    }, [end]);
+    // useEffect(() => {
+    //     if (end && end !== "null") {
+    //         setEndTime(convertTo24HourFormat(end));
+    //     } else {
+    //         setEndTime("");
+    //     }
+    // }, [end]);
 
     const [alertShow, setAlertShow] = useState({
         show: false,
@@ -300,7 +353,7 @@ const AssignSchedule = () => {
                         </Col>
                     </Row>
 
-                    <FormField label="Select Duty Hours" as="select" value={dutyHours} onChange={selectedDutyHours}>
+                    <FormField label="Select Duty Hours" as="select" value={dutyHours} onChange={selectedDutyHours} disabled={requiredDutyHours && requiredDutyHours !== "No duty hours"}>
                         <option value="">Select Duty Hours</option>
                         {!Array.isArray(getDutyHours) || getDutyHours.length === 0 ? (
                             <option disabled>No results.</option>
