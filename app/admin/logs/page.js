@@ -114,7 +114,6 @@ const Logs = () => {
                         marginTop: "56px",
                     }}
                 >
-
                     <Card className="shadow rounded-3 mt-3">
                         <Card.Header className="bg-primary text-white">
                             <h5>Activity Logs</h5>

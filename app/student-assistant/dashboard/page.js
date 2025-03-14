@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useLogout } from "@/components/logout";
-import { Container, Table, Spinner } from "react-bootstrap";
+import { Container, Table, Spinner, Card, Row, Col } from "react-bootstrap";
 import axios from "axios";
 import SaNavbar from "@/components/student/navbar";
 import { useAuth } from "@/components/useAuth";
@@ -106,7 +106,54 @@ const Dashboard = () => {
                     }}
                 >
 
-                    <h1>Dashboard</h1>
+                    <Card className="shadow p-3 mb-4 bg-white rounded">
+                        <Card.Body>
+                            <h1 className="text-primary text-center">Dashboard</h1>
+                        </Card.Body>
+                    </Card>
+
+                    <Row className="mb-4">
+                        <Col md={4}>
+                            <Card className="stats-card shadow p-3 mb-4 bg-white rounded">
+                                <h2>Schedule</h2>
+                                <h6>
+                                    {getSaDutySchedule.length > 0
+                                        ? getSaDutySchedule.map((s) => s.day_names).join(", ")
+                                        : "No Schedule"}
+                                </h6>
+                            </Card>
+                        </Col>
+
+                        <Col md={4}>
+                            <Card className="stats-card shadow p-3 mb-4 bg-white rounded">
+                                <h2>Time Schedule</h2>
+                                <h6>
+                                    {getSaDutySchedule.length > 0
+                                        ? getSaDutySchedule.map((s) => s.time_schedule).join(", ")
+                                        : "No time schedule"}
+                                </h6>
+                            </Card>
+                        </Col>
+
+                        <Col md={4}>
+                            <Card className="stats-card shadow p-3 mb-4 bg-white rounded">
+                                <h2>Required Duty Hours</h2>
+                                <h6>
+                                    {getSaDutySchedule
+                                        .map((s) => {
+                                            const totalDuty = s.total_duty_hours_formatted;
+                                            const requiredDuty = s.required_duty_hours;
+                                            if (totalDuty === "No duty hours" && requiredDuty === "No duty hours") {
+                                                return "No duty hours";
+                                            }
+
+                                            return `${totalDuty} / ${requiredDuty}`;
+                                        })
+                                        .join(", ")}
+                                </h6>
+                            </Card>
+                        </Col>
+                    </Row>
 
                     <Table>
                         <thead>

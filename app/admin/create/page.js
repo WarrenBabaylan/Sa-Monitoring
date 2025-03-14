@@ -207,10 +207,6 @@ const Create = () => {
     };
 
     const submit = async () => {
-
-        const confirmSubmit = confirm("Are you sure you want to submit");
-        if (!confirmSubmit) return;
-
         if (!firstname && !lastname && !studentId && !email) {
             showAlert("danger", "Please fill up all fields!");
             return;
@@ -231,6 +227,10 @@ const Create = () => {
             return;
         }
 
+        const confirmSubmit = confirm("Are you sure you want to submit");
+        if (!confirmSubmit) return;
+
+
         const formattedStudentId = formatStudentId(studentId);
 
         const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
@@ -247,6 +247,8 @@ const Create = () => {
             password: lastname.toLowerCase(),
             adminId: user.user_id,
         };
+
+        console.log(jsonData);
 
         const formData = new FormData();
         formData.append("operation", "createSaAccount");
@@ -501,6 +503,20 @@ const Create = () => {
                             <Row className="mb-3">
                                 <Col md={6}>
                                     <FormField
+                                        label={"Student ID"}
+                                        type={"text"}
+                                        placeholder={"Enter student ID"}
+                                        value={studentId}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (/^[0-9-]*$/.test(value)) {
+                                                setStudentId(value);
+                                            }
+                                        }}
+                                    />
+                                </Col>
+                                <Col md={6}>
+                                    <FormField
                                         label={"Firstname"}
                                         type={"text"}
                                         placeholder={"enter firstname"}
@@ -513,30 +529,15 @@ const Create = () => {
                                         }}
                                     />
                                 </Col>
-                                <Col md={6}>
-                                    <FormField
-                                        label={"Lastname"}
-                                        type={"text"}
-                                        placeholder={"enter lastname"}
-                                        value={lastname}
-                                        onChange={(e) => {
-                                            setLastname(e.target.value);
-                                        }}
-                                    />
-                                </Col>
                             </Row>
 
                             <FormField
-                                label={"Student ID"}
+                                label={"Lastname"}
                                 type={"text"}
-                                placeholder={"Enter student ID"}
-                                value={studentId}
+                                placeholder={"enter lastname"}
+                                value={lastname}
                                 onChange={(e) => {
-                                    const value = e.target.value;
-                                    // Allow only numbers and dashes
-                                    if (/^[0-9-]*$/.test(value)) {
-                                        setStudentId(value);
-                                    }
+                                    setLastname(e.target.value);
                                 }}
                             />
 
