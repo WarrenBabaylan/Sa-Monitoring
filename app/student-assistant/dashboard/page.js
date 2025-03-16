@@ -10,7 +10,7 @@ import { useAuth } from "@/components/useAuth";
 
 const Dashboard = () => {
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
-    const { user, isLoading, setIsLoading } = useAuth();
+    const { user, isLoading } = useAuth();
     const router = useRouter();
     const logout = useLogout();
 
@@ -109,18 +109,11 @@ const Dashboard = () => {
                         marginTop: "56px",
                     }}
                 >
-
-                    <Card className="shadow p-3 mb-4 bg-white rounded">
-                        <Card.Body>
-                            <h1 className="text-primary text-center">Dashboard</h1>
-                        </Card.Body>
-                    </Card>
-
                     <Row className="mb-4">
                         <Col md={4}>
-                            <Card className="stats-card shadow p-3 mb-4 bg-white rounded">
-                                <h2>Schedule</h2>
-                                <h6>
+                            <Card className="stats-card shadow p-3 mb-4 bg-light rounded border">
+                                <h4 className="text-primary">Schedule</h4>
+                                <h6 className="text-dark">
                                     {getSaDutySchedule.length > 0
                                         ? getSaDutySchedule.map((s) => s.day_names).join(", ")
                                         : "No Schedule"}
@@ -129,9 +122,9 @@ const Dashboard = () => {
                         </Col>
 
                         <Col md={4}>
-                            <Card className="stats-card shadow p-3 mb-4 bg-white rounded">
-                                <h2>Time Schedule</h2>
-                                <h6>
+                            <Card className="stats-card shadow p-3 mb-4 bg-light rounded border">
+                                <h4 className="text-primary">Time Schedule</h4>
+                                <h6 className="text-dark">
                                     {getSaDutySchedule.length > 0
                                         ? getSaDutySchedule.map((s) => s.time_schedule).join(", ")
                                         : "No time schedule"}
@@ -140,9 +133,9 @@ const Dashboard = () => {
                         </Col>
 
                         <Col md={4}>
-                            <Card className="stats-card shadow p-3 mb-4 bg-white rounded">
-                                <h2>Required Duty Hours</h2>
-                                <h6>
+                            <Card className="stats-card shadow p-3 mb-4 bg-light rounded border">
+                                <h4 className="text-primary">Required Duty Hours</h4>
+                                <h6 className="text-dark">
                                     {getSaDutySchedule.length === 0 ? (
                                         "No duty hours"
                                     ) : (
@@ -150,10 +143,9 @@ const Dashboard = () => {
                                             .map((s) => {
                                                 const totalDuty = s.total_duty_hours_formatted;
                                                 const requiredDuty = s.required_duty_hours;
-                                                if (totalDuty === "No duty hours" && requiredDuty === "No duty hours") {
-                                                    return "No duty hours";
-                                                }
-                                                return `${totalDuty} / ${requiredDuty}`;
+                                                return totalDuty === "No duty hours" && requiredDuty === "No duty hours"
+                                                    ? "No duty hours"
+                                                    : `${totalDuty} / ${requiredDuty}`;
                                             })
                                             .join(", ")
                                     )}
@@ -161,31 +153,6 @@ const Dashboard = () => {
                             </Card>
                         </Col>
                     </Row>
-
-                    <Table>
-                        <thead>
-                            <tr>
-                                <td>Day Schedule</td>
-                                <td>Time Schedule</td>
-                                <td>Total Duty Hours</td>
-                                <td>Rendered Duty Hours</td>
-                                <td>Required Duty Hours</td>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {getSaDutySchedule.map((saDutySchedule, index) => {
-                                return (
-                                    <tr key={index}>
-                                        <td>{saDutySchedule.day_names}</td>
-                                        <td>{saDutySchedule.time_schedule}</td>
-                                        <td>{saDutySchedule.total_duty_hours_formatted}</td>
-                                        <td>{saDutySchedule.rendered_vs_required}</td>
-                                        <td>{saDutySchedule.required_duty_hours}</td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </Table>
                 </Container>
             </div>
         </>

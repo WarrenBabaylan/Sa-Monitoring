@@ -9,7 +9,7 @@ import { useAuth } from "@/components/useAuth";
 
 
 const TrackTime = () => {
-    const { user, isLoading, setIsLoading } = useAuth();
+    const { user, isLoading } = useAuth();
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const router = useRouter();
     const logout = useLogout();
@@ -236,11 +236,9 @@ const TrackTime = () => {
                     }}
                 >
 
-                    <h2>Track Time</h2>
-
                     <Button
                         variant="success"
-                        className="fw-bold px-4 py-2 me-3 rounded-pill shadow"
+                        className="fw-bold px-4 py-2 me-3 rounded-pill shadow mb-2"
                         onClick={SaTimeIn}
                         disabled={!hasSchedule}
                     >
@@ -249,7 +247,7 @@ const TrackTime = () => {
 
                     <Button
                         variant="danger"
-                        className="fw-bold px-4 py-2 rounded-pill shadow"
+                        className="fw-bold px-4 py-2 rounded-pill shadow mb-2"
                         onClick={SaTimeOut}
                         disabled={!hasSchedule}
                     >
