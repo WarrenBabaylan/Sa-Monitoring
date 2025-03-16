@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
-const API_URL = "http://localhost/nextjs/api/loginAuth/admin.php";
+const url = process.env.NEXT_PUBLIC_BACKEND_URL + "login.php";
 
 export const useLogout = () => {
     const router = useRouter();
@@ -12,7 +12,7 @@ export const useLogout = () => {
         if (!confirmLogout) return;
 
         try {
-            const response = await axios.get(API_URL, {
+            const response = await axios.get(url, {
                 params: { json: JSON.stringify({}), operation: "logout" },
                 withCredentials: true,
             });
@@ -24,7 +24,6 @@ export const useLogout = () => {
                 alert("Logout failed. Please try again.");
             }
         } catch (error) {
-            console.error("Logout error:", error);
             alert("An error occurred during logout.");
         }
     };

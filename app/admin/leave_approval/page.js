@@ -64,16 +64,19 @@ const LeaveApproval = () => {
     const handleShowModal = () => setShowApprovedModal(true);
 
     const retrieveApprovedStatus = async () => {
-        const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "admin.php";
 
-        const response = await axios.get(url, {
-            params: {
-                json: JSON.stringify({}),
-                operation: "displayApprovedStatus",
-            },
-        });
-        setGetApprovedStatus(response.data);
-        console.log(response.data);
+        try {
+            const response = await axios.get(url, {
+                params: {
+                    json: JSON.stringify({}),
+                    operation: "displayApprovedStatus",
+                },
+            });
+            setGetApprovedStatus(response.data);
+        } catch (error) {
+            setGetApprovedStatus([]);
+        }
     };
 
     const selectedApprovedStatus = (event) => {
@@ -81,7 +84,7 @@ const LeaveApproval = () => {
     };
 
     const retrieveSaLeaveRequests = async () => {
-        const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "admin.php";
 
         try {
             const response = await axios.get(url, {
@@ -97,7 +100,7 @@ const LeaveApproval = () => {
     };
 
     const retrieveSaLeaveRequestsById = async (leaveId) => {
-        const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "admin.php";
 
         const jsondata = {
             leaveId: leaveId,
@@ -126,34 +129,37 @@ const LeaveApproval = () => {
     };
 
     const saveChanges = async () => {
-        const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "admin.php";
 
         const jsonData = {
-            leaveId: getSaLeaveRequestsById[0].leave_id,
+            leaveId: getSaLeaveRequestsById[0]?.leave_id,
             approvedStatus: approvedStatus,
             adminComment: adminComment,
-            adminId: user.user_id,
+            adminId: user?.user_id,
         };
-
-        console.log(jsonData);
 
         const formData = new FormData();
         formData.append("operation", "ApprovedLeaveRequest");
         formData.append("json", JSON.stringify(jsonData));
 
-        const response = await axios({
-            url: url,
-            method: "POST",
-            data: formData,
-        });
+        try {
+            const response = await axios({
+                url: url,
+                method: "POST",
+                data: formData,
+            });
 
-        if (response.data == 1) {
-            alert("Leave Request approved!");
-            setAdminComment("");
-            retrieveSaLeaveRequests();
-        } else {
-            alert("Leave Request Failed!");
+            if (response.data === 1) {
+                alert("Leave Request approved!");
+                setAdminComment("");
+                retrieveSaLeaveRequests();
+            } else {
+                alert("Leave Request Failed!");
+            }
+        } catch (error) {
+            alert("Network error. Please try again.");
         }
+
     };
 
     if (isLoading) {
@@ -230,7 +236,7 @@ const LeaveApproval = () => {
                                         </tr>
                                     ) : !Array.isArray(getSaLeaveRequests) ? (
                                         <tr>
-                                            <td colSpan="7" className="text-center text-danger fw-bold">
+                                            <td colSpan="7" className="text-center fw-bold">
                                                 No data available. Please wait or check your connection.
                                             </td>
                                         </tr>
@@ -348,11 +354,17 @@ const LeaveApproval = () => {
                                                 className="form-control shadow-sm"
                                             >
                                                 <option value="">Select Approve Status</option>
-                                                {getApprovedStatus.map((approvedStatus, index) => (
-                                                    <option key={index} value={approvedStatus.approved_status_id}>
-                                                        {approvedStatus.approved_status_name}
-                                                    </option>
-                                                ))}
+                                                {
+                                                    !Array.isArray(getApprovedStatus) || getApprovedStatus.length === 0 ? (
+                                                        <option disabled>No results.</option>
+                                                    ) : (
+                                                        getApprovedStatus.map((approvedStatus, index) => (
+                                                            <option key={index} value={approvedStatus.approved_status_id}>
+                                                                {approvedStatus.approved_status_name}
+                                                            </option>
+                                                        ))
+                                                    )
+                                                }
                                             </Form.Select>
                                         </td>
                                     </tr>

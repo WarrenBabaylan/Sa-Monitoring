@@ -60,7 +60,7 @@ const DutyHours = () => {
     const checkDutyHours = async () => {
         if (!hours) return;
 
-        const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "admin.php";
         const checkData = { requiredDutyHours: hours };
 
         try {
@@ -87,7 +87,6 @@ const DutyHours = () => {
 
             setHours("");
         } catch (error) {
-            console.error("Error checking duty hours:", error);
             showToast("danger", "Network error. Please try again.");
         }
     };
@@ -127,7 +126,7 @@ const DutyHours = () => {
         const confirmAddDutyHours = confirm("Are you sure to add new duty hours?");
         if (!confirmAddDutyHours) return;
 
-        const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "admin.php";
 
         const selectedData = dutyHoursList
             .filter(entry => selectedDutyHours.includes(entry.id))
@@ -161,7 +160,6 @@ const DutyHours = () => {
                 showToast("warning", "Failed to add duty hours.");
             }
         } catch (error) {
-            console.error("Error adding duty hours:", error);
             showToast("danger", "Network error. Please try again.");
         }
     };

@@ -40,7 +40,7 @@ const Dashboard = () => {
     useEffect(() => {
         if (!isLoading && (!user || user.role !== "admin")) {
             router.replace("/");
-        } 
+        }
     }, [user, isLoading, router]);
 
     useEffect(() => {
@@ -64,7 +64,7 @@ const Dashboard = () => {
     }, []);
 
     const retrieveSAList = async () => {
-        const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "admin.php";
 
         try {
             const response = await axios.get(url, {
@@ -80,7 +80,6 @@ const Dashboard = () => {
                 setGetSAList([]);
                 setTotalSA(0);
             }
-            console.log(response.data);
         } catch (error) {
             setGetSAList([]);
             setTotalSA(0);
@@ -88,20 +87,23 @@ const Dashboard = () => {
     };
 
     const retrieveAdminList = async () => {
-        const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "admin.php";
 
-        const response = await axios.get(url, {
-            params: {
-                json: JSON.stringify({}),
-                operation: "displayTotalAdmin",
-            },
-        });
-        if (Array.isArray(response.data) && response.data.length > 0) {
-            setGetAdminList(response.data[0].admin);
-        } else {
+        try {
+            const response = await axios.get(url, {
+                params: {
+                    json: JSON.stringify({}),
+                    operation: "displayTotalAdmin",
+                },
+            });
+            if (Array.isArray(response.data) && response.data.length > 0) {
+                setGetAdminList(response.data[0].admin);
+            } else {
+                setGetAdminList(0);
+            }
+        } catch (error) {
             setGetAdminList(0);
         }
-        console.log(response.data);
     };
 
     const getWeekRange = (date) => {
@@ -118,7 +120,8 @@ const Dashboard = () => {
 
     const retrieveAttendancePie = async () => {
         const { start, end } = getWeekRange(selectedDate);
-        const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "admin.php";
 
         try {
             const response = await axios.get(url, {

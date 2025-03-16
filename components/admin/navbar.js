@@ -1,6 +1,4 @@
 "use client";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import * as Icon from "react-bootstrap-icons";
 import { Navbar, Nav, Button } from "react-bootstrap";
 
@@ -11,9 +9,6 @@ const AdminNavbar = ({
     toggleSidebar,
     logout,
 }) => {
-    const router = useRouter();
-
-  
     return (
         <>
             {/* Navbar */}

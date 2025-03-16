@@ -48,41 +48,42 @@ const TrackTime = () => {
     }, []);
 
     const retrieveSaDutySchedule = async () => {
-        const url =
-            "http://localhost/nextjs/api/sa-monitoring/studentAssistant.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "studentAssistant.php";
 
         const jsonData = {
             saId: user.user_id,
         };
 
-        const response = await axios.get(url, {
-            params: {
-                json: JSON.stringify(jsonData),
-                operation: "displaySaDutySchedule",
-            },
-        });
+        try {
+            const response = await axios.get(url, {
+                params: {
+                    json: JSON.stringify(jsonData),
+                    operation: "displaySaDutySchedule",
+                },
+            });
 
-        setGetSaDutySchedule(response.data);
-
-        // Check if the SA has a schedule for today
-        const today = new Date().toLocaleString("en-us", { weekday: "long" }); // Get today's day name
-        const scheduleToday = response.data.some((schedule) =>
-            schedule.day_names.includes(today)
-        );
-
-        setHasSchedule(scheduleToday);
-
-        if (scheduleToday) {
-            const schedule = response.data.find((schedule) =>
+            setGetSaDutySchedule(response.data);
+            const today = new Date().toLocaleString("en-us", { weekday: "long" }); // Get today's day name
+            const scheduleToday = response.data.some((schedule) =>
                 schedule.day_names.includes(today)
             );
-            setScheduleId(schedule.duty_schedule_id); // Store the schedule ID for later
+
+            setHasSchedule(scheduleToday);
+
+            if (scheduleToday) {
+                const schedule = response.data.find((schedule) =>
+                    schedule.day_names.includes(today)
+                );
+                setScheduleId(schedule.duty_schedule_id); // Store the schedule ID for later
+            }
+        } catch (error) {
+            setGetSaDutySchedule([]);
         }
     };
 
     const retrieveSaTimeIn = async () => {
-        const url =
-            "http://localhost/nextjs/api/sa-monitoring/studentAssistant.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "studentAssistant.php";
+
         const jsonData = {
             saId: user.user_id,
         };
@@ -97,7 +98,7 @@ const TrackTime = () => {
             setGetSaTimeIn(response.data);
             console.log(response.data);
         } catch (error) {
-            setGetSaTimeIn(null);
+            setGetSaTimeIn([]);
         }
     };
 
@@ -110,14 +111,12 @@ const TrackTime = () => {
         const confirmTimeIn = confirm("Are you sure you want to time in?");
         if (!confirmTimeIn) return;
 
-        const url = "http://localhost/nextjs/api/sa-monitoring/studentAssistant.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "studentAssistant.php";
 
         const jsonData = {
             saId: user.user_id,
             dutyScheduleId: scheduleId, // Pass the selected schedule ID
         };
-
-        console.log(jsonData);
 
         const formData = new FormData();
         formData.append("operation", "SaTimeIn");
@@ -163,7 +162,8 @@ const TrackTime = () => {
         const confirmTimeOut = confirm("Are you sure you want to time out?");
         if (!confirmTimeOut) return;
 
-        const url = "http://localhost/nextjs/api/sa-monitoring/studentAssistant.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "studentAssistant.php";
+
         const jsonData = {
             saId: user.user_id,
             dutyScheduleId: scheduleId,
@@ -279,19 +279,19 @@ const TrackTime = () => {
                         <tbody>
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan="6" className="text-center text-muted">
+                                    <td colSpan="8" className="text-center text-muted">
                                         Loading data, please wait...
                                     </td>
                                 </tr>
                             ) : !Array.isArray(getSaTimeIn) ? (
                                 <tr>
-                                    <td colSpan="6" className="text-center text-danger fw-bold">
+                                    <td colSpan="8" className="text-center text-danger fw-bold">
                                         No data available. Please wait or check your connection.
                                     </td>
                                 </tr>
                             ) : getSaTimeIn.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="text-center text-muted">
+                                    <td colSpan="8" className="text-center text-muted">
                                         No time in available.
                                     </td>
                                 </tr>

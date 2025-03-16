@@ -67,8 +67,7 @@ const ApplyLeave = () => {
 
     const retrieveLeaveRequest = async () => {
         try {
-            const url =
-                "http://localhost/nextjs/api/sa-monitoring/studentAssistant.php";
+            const url = process.env.NEXT_PUBLIC_BACKEND_URL + "studentAssistant.php";
 
             const formattedDate = selectedDate
                 ? `${selectedDate.getFullYear()}-${String(
@@ -87,22 +86,19 @@ const ApplyLeave = () => {
                     operation: "displayLeaveRequest",
                 },
             });
-
             setGetSaLeaveRequests(response.data);
-            console.log(response.data);
         } catch (error) {
-            console.error("Error fetching leave requests:", error);
+            setGetSaLeaveRequests([]);
         }
     }
 
     const submitLeave = async () => {
-        if (!leaveType && !customLeaveType && !reason && !date) {
-            alert("Please fill in all the fields");
+        if (!leaveType || (leaveType === "Other" && !customLeaveType) || !reason.trim() || !date) {
+            alert("Please fill in all the required fields.");
             return;
         }
 
-        const url =
-            "http://localhost/nextjs/api/sa-monitoring/studentAssistant.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "studentAssistant.php";
 
         const formattedDate = date
             ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
@@ -112,33 +108,35 @@ const ApplyLeave = () => {
             : null;
 
         const jsonData = {
-            saId: user.user_id,
+            saId: user?.user_id,
             leaveType: leaveType === "Other" ? customLeaveType : leaveType,
-            reason: reason,
+            reason: reason.trim(),
             date: formattedDate,
         };
-
-        console.log(jsonData);
 
         const formData = new FormData();
         formData.append("operation", "SaLeaveRequest");
         formData.append("json", JSON.stringify(jsonData));
 
-        const response = await axios({
-            url: url,
-            method: "POST",
-            data: formData,
-        });
+        try {
+            const response = await axios({
+                url: url,
+                method: "POST",
+                data: formData,
+            });
 
-        if (response.data == 1) {
-            alert("Leave request submitted successfully");
-            retrieveLeaveRequest(user.user_id, selectedDate, setGetSaLeaveRequests);
-            setLeaveType("");
-            setCustomLeaveType("");
-            setReason("");
-            setDate(null);
-        } else {
-            alert("Failed to submit leave request");
+            if (response.data === 1) {
+                alert("Leave request submitted successfully");
+                retrieveLeaveRequest(user.user_id, selectedDate, setGetSaLeaveRequests);
+                setLeaveType("");
+                setCustomLeaveType("");
+                setReason("");
+                setDate(null);
+            } else {
+                alert("Failed to submit leave request");
+            }
+        } catch (error) {
+            alert("Network error. Please try again or check your connection.");
         }
     };
 
@@ -183,8 +181,6 @@ const ApplyLeave = () => {
                         marginTop: "56px",
                     }}
                 >
-
-
                     <h2 className="mb-3">Apply Leave</h2>
 
                     <div className="d-flex justify-content-end mb-4">

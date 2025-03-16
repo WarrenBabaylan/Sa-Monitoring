@@ -2,7 +2,7 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 
-const API_URL = "http://localhost/nextjs/api/sa-monitoring/login.php";
+const url = process.env.NEXT_PUBLIC_BACKEND_URL + "login.php";
 
 export const useAuth = () => {
     const [user, setUser] = useState(null);
@@ -11,7 +11,7 @@ export const useAuth = () => {
     useEffect(() => {
         const checkSession = async () => {
             try {
-                const response = await axios.get(API_URL, {
+                const response = await axios.get(url, {
                     params: { json: JSON.stringify({}), operation: "checkSession" },
                     withCredentials: true,
                 });
@@ -22,13 +22,11 @@ export const useAuth = () => {
                     setUser(null);
                 }
             } catch (error) {
-                console.error("Error checking session:", error);
                 setUser(null);
             } finally {
                 setIsLoading(false);
             }
         };
-
         checkSession();
     }, []);
 

@@ -9,8 +9,8 @@ import { useAuth } from "@/components/useAuth";
 
 
 const Dashboard = () => {
-    const { user, isLoading, setIsLoading } = useAuth();
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+    const { user, isLoading, setIsLoading } = useAuth();
     const router = useRouter();
     const logout = useLogout();
 
@@ -45,23 +45,27 @@ const Dashboard = () => {
     const retrieveSaDutySchedule = async () => {
         if (!user) return;
 
-        const url =
-            "http://localhost/nextjs/api/sa-monitoring/studentAssistant.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "studentAssistant.php";
 
         const jsonData = {
-            saId: user.user_id,
+            saId: user?.user_id,
         };
 
-        console.log(jsonData);
-
-        const response = await axios.get(url, {
-            params: {
-                json: JSON.stringify(jsonData),
-                operation: "displaySaDutySchedule",
-            },
-        });
-        setGetSaDutySchedule(response.data);
-        console.log(response.data);
+        try {
+            const response = await axios.get(url, {
+                params: {
+                    json: JSON.stringify(jsonData),
+                    operation: "displaySaDutySchedule",
+                },
+            });
+            if (Array.isArray(response.data)) {
+                setGetSaDutySchedule(response.data);
+            } else {
+                setGetSaDutySchedule([]);
+            }
+        } catch (error) {
+            setGetSaDutySchedule([]);
+        }
     };
 
     if (isLoading) {
@@ -139,17 +143,20 @@ const Dashboard = () => {
                             <Card className="stats-card shadow p-3 mb-4 bg-white rounded">
                                 <h2>Required Duty Hours</h2>
                                 <h6>
-                                    {getSaDutySchedule
-                                        .map((s) => {
-                                            const totalDuty = s.total_duty_hours_formatted;
-                                            const requiredDuty = s.required_duty_hours;
-                                            if (totalDuty === "No duty hours" && requiredDuty === "No duty hours") {
-                                                return "No duty hours";
-                                            }
-
-                                            return `${totalDuty} / ${requiredDuty}`;
-                                        })
-                                        .join(", ")}
+                                    {getSaDutySchedule.length === 0 ? (
+                                        "No duty hours"
+                                    ) : (
+                                        getSaDutySchedule
+                                            .map((s) => {
+                                                const totalDuty = s.total_duty_hours_formatted;
+                                                const requiredDuty = s.required_duty_hours;
+                                                if (totalDuty === "No duty hours" && requiredDuty === "No duty hours") {
+                                                    return "No duty hours";
+                                                }
+                                                return `${totalDuty} / ${requiredDuty}`;
+                                            })
+                                            .join(", ")
+                                    )}
                                 </h6>
                             </Card>
                         </Col>

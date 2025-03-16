@@ -93,7 +93,7 @@ const Create = () => {
     };
 
     const retrieveAllSa = async (page) => {
-        const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "admin.php";
 
         try {
             const response = await axios.get(url, {
@@ -124,7 +124,7 @@ const Create = () => {
     };
 
     const retrieveSaById = async (saId) => {
-        const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "admin.php";
 
         const jsonData = {
             saId: saId,
@@ -233,7 +233,7 @@ const Create = () => {
 
         const formattedStudentId = formatStudentId(studentId);
 
-        const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "admin.php";
 
         setPassword(lastname);
         setUsername(formattedStudentId);
@@ -248,8 +248,6 @@ const Create = () => {
             adminId: user.user_id,
         };
 
-        console.log(jsonData);
-
         const formData = new FormData();
         formData.append("operation", "createSaAccount");
         formData.append("json", JSON.stringify(jsonData));
@@ -261,7 +259,7 @@ const Create = () => {
                 data: formData,
             });
 
-            if (response.data == 1) {
+            if (response.data === 1) {
                 showAlert("success", "Account created successfully!");
                 setFirstname("");
                 setLastname("");
@@ -270,9 +268,9 @@ const Create = () => {
                 setUsername("");
                 setPassword("");
                 retrieveAllSa();
-            } else if (response.data == 2) {
+            } else if (response.data === 2) {
                 showAlert("danger", "Username already exists!");
-            } else if (response.data == 3) {
+            } else if (response.data === 3) {
                 showAlert("danger", "Invalid email address. Please enter a valid email.");
             } else {
                 showAlert("warning", "Account creation failed!");

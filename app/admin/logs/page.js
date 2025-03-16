@@ -49,7 +49,7 @@ const Logs = () => {
     }, []);
 
     const retrieveActivityLogs = async (page) => {
-        const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "admin.php";
 
         try {
             const response = await axios.get(url, {

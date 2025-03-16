@@ -145,7 +145,7 @@ const AssignSchedule = () => {
     };
 
     const retrieveDays = async () => {
-        const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "admin.php";
 
         try {
             const response = await axios.get(url, {
@@ -161,7 +161,7 @@ const AssignSchedule = () => {
     };
 
     const retrieveDutyHours = async () => {
-        const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "admin.php";
 
         try {
             const response = await axios.get(url, {
@@ -172,7 +172,7 @@ const AssignSchedule = () => {
             });
             setGetDutyHours(response.data);
         } catch (error) {
-            setGetDutyHours(null);
+            setGetDutyHours([]);
         }
     };
 
@@ -206,11 +206,10 @@ const AssignSchedule = () => {
     };
 
     const submitAssignSched = async () => {
-
         const confirmAssignSchedule = confirm("Are you sure you want to submit?");
         if (!confirmAssignSchedule) return;
 
-        const url = "http://localhost/nextjs/api/sa-monitoring/admin.php";
+        const url = process.env.NEXT_PUBLIC_BACKEND_URL + "admin.php";
 
         const jsonData = {
             saId: saId,
