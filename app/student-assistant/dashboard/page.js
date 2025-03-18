@@ -58,6 +58,7 @@ const Dashboard = () => {
                     operation: "displaySaDutySchedule",
                 },
             });
+            console.log(response.data);
             if (Array.isArray(response.data)) {
                 setGetSaDutySchedule(response.data);
             } else {
@@ -126,8 +127,19 @@ const Dashboard = () => {
                                 <h4 className="text-primary">Time Schedule</h4>
                                 <h6 className="text-dark">
                                     {getSaDutySchedule.length > 0
-                                        ? getSaDutySchedule.map((s) => s.time_schedule).join(", ")
-                                        : "No time schedule"}
+                                        ? (() => {
+                                            const schedules = [...new Set(getSaDutySchedule.map(s => {
+                                                return s.time_start && s.time_end
+                                                    ? `${s.time_start} - ${s.time_end}`
+                                                    : "No time schedule";
+                                            }))];
+
+                                            return schedules.includes("No time schedule")
+                                                ? "No time schedule"
+                                                : schedules.join(", ");
+                                        })()
+                                        : "No time schedule"
+                                    }
                                 </h6>
                             </Card>
                         </Col>
@@ -136,19 +148,42 @@ const Dashboard = () => {
                             <Card className="stats-card shadow p-3 mb-4 bg-light rounded border">
                                 <h4 className="text-primary">Required Duty Hours</h4>
                                 <h6 className="text-dark">
-                                    {getSaDutySchedule.length === 0 ? (
-                                        "No duty hours"
-                                    ) : (
-                                        getSaDutySchedule
-                                            .map((s) => {
-                                                const totalDuty = s.total_duty_hours_formatted;
-                                                const requiredDuty = s.required_duty_hours;
-                                                return totalDuty === "No duty hours" && requiredDuty === "No duty hours"
-                                                    ? "No duty hours"
-                                                    : `${totalDuty} / ${requiredDuty}`;
-                                            })
-                                            .join(", ")
-                                    )}
+                                    {getSaDutySchedule.length > 0
+                                        ? (() => {
+                                            let totalMinutes = 0;
+                                            let requiredDutyHours = new Set();
+
+                                            getSaDutySchedule.forEach(s => {
+                                                if (s.total_duty_hours_formatted) {
+                                                    const match = s.total_duty_hours_formatted.match(/(\d+)\s*hours?,?\s*(\d*)\s*minutes?/);
+                                                    if (match) {
+                                                        const hours = parseInt(match[1], 10) || 0;
+                                                        const minutes = parseInt(match[2], 10) || 0;
+                                                        totalMinutes += hours * 60 + minutes;
+                                                    }
+                                                }
+                                                if (s.required_duty_hours) {
+                                                    requiredDutyHours.add(s.required_duty_hours);
+                                                }
+                                            });
+
+                                            // Convert total minutes back to hours and minutes
+                                            const totalHours = Math.floor(totalMinutes / 60);
+                                            const remainingMinutes = totalMinutes % 60;
+
+                                            const formattedTotalDuty =
+                                                totalMinutes > 0
+                                                    ? `${totalHours > 0 ? `${totalHours} hours` : ""}${totalHours > 0 && remainingMinutes > 0 ? ", " : ""}${remainingMinutes > 0 ? `${remainingMinutes} minutes` : ""}`
+                                                    : ""; // If no total duty hours, it will be empty
+
+                                            const formattedRequiredDuty = requiredDutyHours.size > 0 ? [...requiredDutyHours][0] : "";
+
+                                            // If both values are empty, show "No duty hours"
+                                            return formattedTotalDuty || formattedRequiredDuty
+                                                ? `${formattedTotalDuty || "0 hours"} / ${formattedRequiredDuty || "0 hours"}`
+                                                : "No duty hours";
+                                        })()
+                                        : "No duty hours"}
                                 </h6>
                             </Card>
                         </Col>

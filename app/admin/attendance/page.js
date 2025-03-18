@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import AdminNavbar from "@/components/admin/navbar";
 import { useLogout } from "@/components/logout";
 import { useAuth } from "@/components/useAuth";
-import { Container, Table, Button, Form, Spinner, Card } from "react-bootstrap";
+import { Container, Table, Button, Form, Spinner, Card, Toast, ToastContainer } from "react-bootstrap";
 import ReusableModal from "@/components/modal";
 
-const DutyHours = () => {
+const Attendance = () => {
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const { user, isLoading, setIsLoading } = useAuth();
     const [loading, setLoading] = useState(false);
@@ -45,6 +45,19 @@ const DutyHours = () => {
     const toggleSidebar = useCallback(() => {
         setIsSidebarVisible((prev) => !prev);
     }, []);
+
+    const [toast, setToast] = useState({
+        show: false,
+        variant: "success",
+        message: "",
+    });
+
+    const showToast = (variant, message) => {
+        setToast({ show: true, variant, message });
+        setTimeout(() => {
+            setToast((prev) => ({ ...prev, show: false }));
+        }, 1000);
+    };
 
     //--------------- Time-in Approval Modal ---------------//
     const [date, setDate] = useState("");
@@ -206,13 +219,13 @@ const DutyHours = () => {
             });
 
             if (response.data === 1) {
-                alert("Approval successful!");
+                showToast("success", "Approve successful.");
                 retrieveAllSaTimeInTrack();
             } else {
-                alert("Approval failed! Please try again.");
+                showToast("warning", "Approve failed.");
             }
         } catch (error) {
-            alert("Network error. Please try again.");
+            alert("danger", "Network error. Please try again.");
         }
     };
 
@@ -462,8 +475,20 @@ const DutyHours = () => {
                     </>
                 }
             />
+
+            <ToastContainer position="top-end" className="p-3">
+                <Toast
+                    show={toast.show}
+                    onClose={() => setToast({ ...toast, show: false })}
+                    delay={1000}
+                    autohide
+                    bg={toast.variant}
+                >
+                    <Toast.Body className="text-white">{toast.message}</Toast.Body>
+                </Toast>
+            </ToastContainer>
         </>
     );
 };
 
-export default DutyHours;
+export default Attendance;

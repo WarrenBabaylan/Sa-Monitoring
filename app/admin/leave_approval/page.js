@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import AdminNavbar from "@/components/admin/navbar";
 import { useLogout } from "@/components/logout";
 import { useAuth } from "@/components/useAuth";
-import { Container, Button, Table, Form, Spinner, Card } from "react-bootstrap";
+import { Container, Button, Table, Form, Spinner, Card, Toast, ToastContainer } from "react-bootstrap";
 import ReusableModal from "@/components/modal";
 
 const LeaveApproval = () => {
@@ -45,6 +45,19 @@ const LeaveApproval = () => {
     const toggleSidebar = useCallback(() => {
         setIsSidebarVisible((prev) => !prev);
     }, []);
+
+    const [toast, setToast] = useState({
+        show: false,
+        variant: "success",
+        message: "",
+    });
+
+    const showToast = (variant, message) => {
+        setToast({ show: true, variant, message });
+        setTimeout(() => {
+            setToast((prev) => ({ ...prev, show: false }));
+        }, 1000);
+    };
 
     const [getSaLeaveRequests, setGetSaLeaveRequests] = useState([]);
     const [getSaLeaveRequestsById, setGetSaLeaveRequestsById] = useState([]);
@@ -129,6 +142,14 @@ const LeaveApproval = () => {
     };
 
     const saveChanges = async () => {
+        const leaveConfirm = window.confirm("Are you sure you want to submit?");
+        if (!leaveConfirm) return;
+
+        if (!approvedStatus || !adminComment) {
+            showToast("danger", "Field are required.");
+            return;
+        }
+
         const url = process.env.NEXT_PUBLIC_BACKEND_URL + "admin.php";
 
         const jsonData = {
@@ -150,16 +171,15 @@ const LeaveApproval = () => {
             });
 
             if (response.data === 1) {
-                alert("Leave Request approved!");
+                showToast("success", "Leave request approved.");
                 setAdminComment("");
                 retrieveSaLeaveRequests();
             } else {
-                alert("Leave Request Failed!");
+                showToast("warning", "Leave request failed!");
             }
         } catch (error) {
-            alert("Network error. Please try again.");
+            showToast("danger", "Network error. Please try again.");
         }
-
     };
 
     if (isLoading) {
@@ -405,6 +425,18 @@ const LeaveApproval = () => {
                     </>
                 }
             />
+
+            <ToastContainer position="top-end" className="p-3">
+                <Toast
+                    show={toast.show}
+                    onClose={() => setToast({ ...toast, show: false })}
+                    delay={1000}
+                    autohide
+                    bg={toast.variant}
+                >
+                    <Toast.Body className="text-white">{toast.message}</Toast.Body>
+                </Toast>
+            </ToastContainer>
         </>
     );
 };

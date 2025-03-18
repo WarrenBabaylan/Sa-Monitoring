@@ -1,4 +1,4 @@
-"use client";
+import Link from "next/link";
 import * as Icon from "react-bootstrap-icons";
 import { Navbar, Nav, Button } from "react-bootstrap";
 
@@ -46,19 +46,22 @@ const SaNavbar = ({
                 }}
             >
                 <Nav className="flex-column p-3">
-                    <Nav.Link href="/student-assistant/dashboard" className="text-light">
-                        <Icon.Grid className="me-2" /> Dashboard
-                    </Nav.Link>
-                    <Nav.Link href="/student-assistant/track-time" className="text-light">
-                        <Icon.Stopwatch className="me-2" /> Track Time
-                    </Nav.Link>
-                    <Nav.Link href="apply-leave" className="text-light">
-                        <Icon.FileEarmarkText className="me-2" /> Apply Leave
-                    </Nav.Link>
-                    {/* <Nav.Link href="qrcode" className="text-light">
-                        <Icon.QrCode className="me-2" /> QR Code
-                    </Nav.Link> */}
-                    <Nav.Link onClick={logout} className="text-light">
+                    <Link href="/student-assistant/dashboard" passHref legacyBehavior>
+                        <Nav.Link className="text-light">
+                            <Icon.Speedometer2 className="me-2" /> Dashboard
+                        </Nav.Link>
+                    </Link>
+                    <Link href="/student-assistant/track-time" passHref legacyBehavior>
+                        <Nav.Link className="text-light">
+                            <Icon.Stopwatch className="me-2" /> Track Time
+                        </Nav.Link>
+                    </Link>
+                    <Link href="/student-assistant/apply-leave" passHref legacyBehavior>
+                        <Nav.Link className="text-light">
+                            <Icon.FileEarmarkText className="me-2" /> Apply Leave
+                        </Nav.Link>
+                    </Link>
+                    <Nav.Link onClick={logout} className="text-light" role="button">
                         <Icon.BoxArrowDownRight className="me-2" /> Logout
                     </Nav.Link>
                 </Nav>
