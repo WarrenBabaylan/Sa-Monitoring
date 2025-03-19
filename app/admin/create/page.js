@@ -92,13 +92,13 @@ const Create = () => {
         }, 900);
     };
 
-    const retrieveAllSa = async (page) => {
+    const retrieveAllSa = async (page, searchKey = "") => {
         const url = process.env.NEXT_PUBLIC_BACKEND_URL + "admin.php";
 
         try {
             const response = await axios.get(url, {
                 params: {
-                    json: JSON.stringify({ limit: recordsPerPage, page }),
+                    json: JSON.stringify({ limit: recordsPerPage, page, searchKey }),
                     operation: "displayAllSa",
                 },
             });
@@ -112,8 +112,8 @@ const Create = () => {
     };
 
     useEffect(() => {
-        retrieveAllSa(currentPage);
-    }, [currentPage]);
+        retrieveAllSa(currentPage, searchQuery);
+    }, [currentPage, searchQuery]);
 
     const totalPages = totalRecords > 0 ? Math.ceil(totalRecords / recordsPerPage) : 1;
 
@@ -380,7 +380,10 @@ const Create = () => {
                             <Form.Control
                                 type="search"
                                 placeholder="Search student assistant"
-                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onChange={(e) => {
+                                    setSearchQuery(e.target.value);
+                                    setCurrentPage(1);
+                                }}
                                 className="mb-3"
                             />
                             <Table
@@ -411,21 +414,18 @@ const Create = () => {
                                         </tr>
                                     ) : !Array.isArray(getAllSa) ? (
                                         <tr>
-                                            <td
-                                                colSpan="7"
-                                                className="text-center text-danger fw-bold"
-                                            >
+                                            <td colSpan="7" className="text-center text-danger fw-bold">
                                                 No data available. Please wait or check your connection.
                                             </td>
                                         </tr>
-                                    ) : filteredSa.length === 0 ? (
+                                    ) : getAllSa.length === 0 ? (
                                         <tr>
                                             <td colSpan="7" className="text-center text-muted">
                                                 No student assistants available.
                                             </td>
                                         </tr>
                                     ) : (
-                                        filteredSa.map((sa, index) => (
+                                        getAllSa.map((sa, index) => (
                                             <tr
                                                 key={index}
                                                 style={{ transition: "0.3s", cursor: "pointer" }}
