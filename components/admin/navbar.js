@@ -1,4 +1,4 @@
-"use client";
+import Link from "next/link";
 import * as Icon from "react-bootstrap-icons";
 import { Navbar, Nav, Button } from "react-bootstrap";
 
@@ -46,28 +46,42 @@ const AdminNavbar = ({
                 }}
             >
                 <Nav className="flex-column p-3">
-                    <Nav.Link href="/admin/dashboard" className="text-light">
-                        <Icon.Grid className="me-2" /> Dashboard
-                    </Nav.Link>
-                    <Nav.Link href="/admin/duty_hours" className="text-light">
-                        <Icon.Clock className="me-2" /> Duty Hours
-                    </Nav.Link>
-                    <Nav.Link href="/admin/create" className="text-light">
-                        <Icon.PersonPlus className="me-2" /> Student Assistant
-                    </Nav.Link>
-                    <Nav.Link href="/admin/attendance" className="text-light">
-                        <Icon.ClipboardCheck className="me-2" /> Attendance
-                    </Nav.Link>
-                    <Nav.Link href="/admin/leave_approval" className="text-light">
-                        <Icon.Check2Circle className="me-2" /> Leave Approval
-                    </Nav.Link>
-                    <Nav.Link href="/admin/add_admin" className="text-light">
-                        <Icon.GearFill className="me-2 text-light" /> Manage Admin
-                    </Nav.Link>
-                    <Nav.Link href="/admin/logs" className="text-light">
-                        <Icon.JournalText className="me-2" /> Activity Logs
-                    </Nav.Link>
-                    <Nav.Link onClick={logout} className="text-light">
+                    <Link href="/admin/dashboard" passHref legacyBehavior>
+                        <Nav.Link className="text-light">
+                            <Icon.Grid className="me-2" /> Dashboard
+                        </Nav.Link>
+                    </Link>
+                    <Link href="/admin/duty_hours" passHref legacyBehavior>
+                        <Nav.Link className="text-light">
+                            <Icon.Clock className="me-2" /> Duty Hours
+                        </Nav.Link>
+                    </Link>
+                    <Link href="/admin/create" passHref legacyBehavior>
+                        <Nav.Link className="text-light">
+                            <Icon.PersonPlus className="me-2" /> Student Assistant
+                        </Nav.Link>
+                    </Link>
+                    <Link href="/admin/attendance" passHref legacyBehavior>
+                        <Nav.Link className="text-light">
+                            <Icon.ClipboardCheck className="me-2" /> Attendance
+                        </Nav.Link>
+                    </Link>
+                    <Link href="/admin/leave_approval" passHref legacyBehavior>
+                        <Nav.Link className="text-light">
+                            <Icon.Check2Circle className="me-2" /> Leave Approval
+                        </Nav.Link>
+                    </Link>
+                    <Link href="/admin/add_admin" passHref legacyBehavior>
+                        <Nav.Link className="text-light">
+                            <Icon.GearFill className="me-2" /> Manage Admin
+                        </Nav.Link>
+                    </Link>
+                    <Link href="/admin/logs" passHref legacyBehavior>
+                        <Nav.Link className="text-light">
+                            <Icon.JournalText className="me-2" /> Activity Logs
+                        </Nav.Link>
+                    </Link>
+                    <Nav.Link onClick={logout} className="text-light" role="button">
                         <Icon.BoxArrowDownRight className="me-2" /> Logout
                     </Nav.Link>
                 </Nav>

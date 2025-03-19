@@ -15,6 +15,7 @@ const TrackTime = () => {
     const logout = useLogout();
 
     const [hasSchedule, setHasSchedule] = useState(false);
+    const [isOnLeave, setIsOnLeave] = useState(false);
     const [scheduleId, setScheduleId] = useState(null);
 
     const [getSaDutySchedule, setGetSaDutySchedule] = useState([]);
@@ -81,13 +82,18 @@ const TrackTime = () => {
                 schedule.day_names.includes(today)
             );
 
-            setHasSchedule(scheduleToday);
+            const onLeaveToday = response.data.some((schedule) =>
+                schedule.day_names.includes(`${today} - On Leave`)
+            );
 
-            if (scheduleToday) {
+            setHasSchedule(scheduleToday);
+            setIsOnLeave(onLeaveToday);
+
+            if (scheduleToday && !onLeaveToday) {
                 const schedule = response.data.find((schedule) =>
                     schedule.day_names.includes(today)
                 );
-                setScheduleId(schedule.duty_schedule_id); // Store the schedule ID for later
+                setScheduleId(schedule.duty_schedule_id);
             }
         } catch (error) {
             setGetSaDutySchedule([]);
@@ -152,61 +158,6 @@ const TrackTime = () => {
             showToast("danger", "Network error. Please try again.");
         }
     };
-
-    // const SaTimeOut = async () => {
-    //     if (!hasSchedule) {
-    //         showToast("warning", "No Schedule Today\nYou don't have a schedule today, so you cannot time out.");
-    //         return;
-    //     }
-
-    //     if (getSaTimeIn.length === 0) {
-    //         setErrorMessage("You haven't timed in yet.");
-    //         return;
-    //     }
-
-    //     const lastEntry = getSaTimeIn[getSaTimeIn.length - 1]; // Get the last time-in entry
-    //     const trackId = lastEntry.track_id; // Get track_id from API response
-
-    //     if (!trackId) {
-    //         showToast("danger", "Invalid tracking ID. Please try again.");
-    //         return;
-    //     }
-
-    //     const confirmTimeOut = confirm("Are you sure you want to time out?");
-    //     if (!confirmTimeOut) return;
-
-    //     const url = process.env.NEXT_PUBLIC_BACKEND_URL + "studentAssistant.php";
-
-    //     const jsonData = {
-    //         saId: user.user_id,
-    //         dutyScheduleId: scheduleId,
-    //         trackId: trackId, // Include trackId
-    //     };
-
-    //     console.log(jsonData);
-
-    //     const formData = new FormData();
-    //     formData.append("operation", "SaTimeOut");
-    //     formData.append("json", JSON.stringify(jsonData));
-
-    //     try {
-    //         const response = await axios({
-    //             url: url,
-    //             method: "POST",
-    //             data: formData,
-    //         });
-
-    //         if (response.data.success) {
-    //             showToast("success", response.data.message);
-    //             retrieveSaTimeIn(); // Refresh the time-in data after timeout
-    //         } else {
-    //             showToast("warning", response.data.message);
-    //         }
-    //     } catch (error) {
-    //         showToast("danger", "Network error. Please try again.");
-    //     }
-    // };
-
 
     const SaTimeOut = async () => {
         if (!hasSchedule) {
@@ -309,18 +260,18 @@ const TrackTime = () => {
                         variant="success"
                         className="fw-bold px-4 py-2 me-3 rounded-pill shadow mb-2"
                         onClick={SaTimeIn}
-                        disabled={!hasSchedule}
+                        disabled={!hasSchedule || isOnLeave}
                     >
-                        {hasSchedule ? "Time In" : "No Schedule Today"}
+                        {isOnLeave ? "On Leave" : hasSchedule ? "Time In" : "No Schedule Today"}
                     </Button>
 
                     <Button
                         variant="danger"
                         className="fw-bold px-4 py-2 rounded-pill shadow mb-2"
                         onClick={SaTimeOut}
-                        disabled={!hasSchedule}
+                        disabled={!hasSchedule || isOnLeave}
                     >
-                        {hasSchedule ? "Time Out" : "No Schedule Today"}
+                        {isOnLeave ? "On Leave" : hasSchedule ? "Time Out" : "No Schedule Today"}
                     </Button>
 
                     <Card className="shadow rounded-3 mt-3">

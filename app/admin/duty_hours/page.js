@@ -224,60 +224,75 @@ const DutyHours = () => {
 
                     {dutyHoursList.length > 0 && (
                         <>
-                            <h5 className="mt-4">Pending Duty Hours</h5>
-                            <Card className="shadow-sm rounded-3 p-3">
-                                <Table striped bordered hover responsive className="text-center align-middle mb-0">
-                                    <thead className="bg-primary text-white">
-                                        <tr>
-                                            <th style={{ width: "5%" }}>
-                                                <Form.Check
-                                                    type="checkbox"
-                                                    checked={selectedDutyHours.length === dutyHoursList.length && dutyHoursList.length > 0}
-                                                    onChange={toggleSelectAll}
-                                                    className="form-check-lg"
-                                                />
-                                            </th>
-                                            <th>Duty Hours</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {dutyHoursList.length === 0 ? (
+                            <h5 className="mt-4 mb-3 fw-bold text-primary">Pending Duty Hours</h5>
+                            <Card className="shadow-sm rounded-3 border-0">
+                                <Card.Body className="p-0">
+                                    <Table striped bordered hover responsive className="text-center align-middle mb-0">
+                                        <thead className="bg-primary text-white">
                                             <tr>
-                                                <td colSpan="3" className="text-muted py-3">No duty hours available.</td>
+                                                <th style={{ width: "5%" }}>
+                                                    <Form.Check
+                                                        type="checkbox"
+                                                        checked={selectedDutyHours.length === dutyHoursList.length && dutyHoursList.length > 0}
+                                                        onChange={toggleSelectAll}
+                                                        className="form-check-lg"
+                                                    />
+                                                </th>
+                                                <th className="py-3">Duty Hours</th>
+                                                <th className="py-3">Action</th>
                                             </tr>
-                                        ) : (
-                                            dutyHoursList.map((entry) => (
-                                                <tr key={entry.id}>
-                                                    <td>
-                                                        <Form.Check
-                                                            type="checkbox"
-                                                            checked={selectedDutyHours.includes(entry.id)}
-                                                            onChange={() => toggleSelect(entry.id)}
-                                                            className="form-check-lg"
-                                                        />
-                                                    </td>
-                                                    <td>{entry.requiredDutyHours} hours</td>
-                                                    <td className="text-end">
-                                                        <Button
-                                                            variant="danger"
-                                                            className="d-flex align-items-center px-3 shadow-sm rounded"
-                                                            onClick={() => removeDutyHours(entry.id)}
-                                                        >
-                                                            <Icon.Trash color="white" size={18} className="me-1" /> Remove
-                                                        </Button>
+                                        </thead>
+                                        <tbody>
+                                            {dutyHoursList.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan="3" className="text-muted py-4">
+                                                        <div className="d-flex justify-content-center align-items-center">
+                                                            <Icon.InfoCircle size={20} className="me-2" />
+                                                            No duty hours available.
+                                                        </div>
                                                     </td>
                                                 </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </Table>
+                                            ) : (
+                                                dutyHoursList.map((entry) => (
+                                                    <tr key={entry.id}>
+                                                        <td>
+                                                            <Form.Check
+                                                                type="checkbox"
+                                                                checked={selectedDutyHours.includes(entry.id)}
+                                                                onChange={() => toggleSelect(entry.id)}
+                                                                className="form-check-lg"
+                                                            />
+                                                        </td>
+                                                        <td className="py-3">{entry.requiredDutyHours} hours</td>
+                                                        <td className="text-end py-3">
+                                                            <Button
+                                                                variant="danger"
+                                                                className="d-flex align-items-center px-3 shadow-sm rounded-pill"
+                                                                onClick={() => removeDutyHours(entry.id)}
+                                                            >
+                                                                <Icon.Trash color="white" size={18} className="me-2" />
+                                                                Remove
+                                                            </Button>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </Table>
+                                </Card.Body>
                             </Card>
 
                             {selectedDutyHours.length > 0 && (
-                                <Button variant="success" onClick={saveToBackend}>
-                                    Save
-                                </Button>
+                                <div className="d-flex justify-content-start mt-3">
+                                    <Button
+                                        variant="success"
+                                        className="d-flex align-items-center px-4 py-2 shadow-sm rounded-pill"
+                                        onClick={saveToBackend}
+                                    >
+                                        <Icon.Save size={18} className="me-2" />
+                                        Save Changes
+                                    </Button>
+                                </div>
                             )}
                         </>
                     )}

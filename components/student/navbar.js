@@ -48,7 +48,7 @@ const SaNavbar = ({
                 <Nav className="flex-column p-3">
                     <Link href="/student-assistant/dashboard" passHref legacyBehavior>
                         <Nav.Link className="text-light">
-                            <Icon.Speedometer2 className="me-2" /> Dashboard
+                            <Icon.Grid className="me-2" /> Dashboard
                         </Nav.Link>
                     </Link>
                     <Link href="/student-assistant/track-time" passHref legacyBehavior>
