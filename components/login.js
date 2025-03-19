@@ -160,19 +160,19 @@ const Login = () => {
         >
             <Container className="d-flex align-items-center justify-content-center vh-100 p-3">
                 <Card
-                    className="d-flex flex-column flex-md-row shadow-lg rounded-0 w-100"
+                    className="d-flex flex-column flex-md-row shadow-lg rounded-0 w-75"
                     style={{
                         maxWidth: "750px",
-                        width: "100%",
+                        width: "75%",
                         transition: "all 0.3s ease-in-out",
                     }}
                 >
-                    <Card className="bg-success text-white p-4 w-100 d-flex flex-column align-items-center justify-content-center rounded-0">
+                    <Card className="bg-success text-white p-1 w-100 d-flex flex-column align-items-center justify-content-center rounded-0">
                         <Image
                             src="/images/coc-logo.png"
                             alt="Logo"
-                            width={120}
-                            height={120}
+                            width={100}
+                            height={100}
                             priority
                         />
                         <h4 className="fw-bold text-center mt-2">Cagayan de Oro College</h4>
@@ -182,7 +182,7 @@ const Login = () => {
                             Pro Deo et Humanitate
                         </p>
                     </Card>
-                    <Card.Body className="w-100 p-4" style={{ backgroundColor: "#ffffff" }}>
+                    <Card.Body className="w-90 p-4" style={{ backgroundColor: "#ffffff" }}>
                         <div className="text-center mb-3">
                             <h2 className="text-dark fw-bold">
                                 SA <span className="text-dark">Monitoring</span>
