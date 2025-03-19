@@ -171,8 +171,8 @@ const Login = () => {
                         <Image
                             src="/images/coc-logo.png"
                             alt="Logo"
-                            width={100}
-                            height={100}
+                            width={160}
+                            height={160}
                             priority
                         />
                         <h4 className="fw-bold text-center mt-2">Cagayan de Oro College</h4>
@@ -285,6 +285,20 @@ const Login = () => {
                         </Form>
                     </Card.Body>
                 </Card>
+                <div
+                    style={{
+                        position: "absolute",
+                        bottom: "20px",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        textAlign: "center",
+                        width: "100%",
+                    }}
+                >
+                    <p className="text- mb-0">
+                        2025[SA Monitoring]Beta. <strong>Developed by ITS Interns 2025. All Rights Reserved.</strong>
+                    </p>
+                </div>
 
                 <ToastContainer position="top-end" className="p-3">
                     <Toast
