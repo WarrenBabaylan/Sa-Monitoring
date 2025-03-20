@@ -1,7 +1,7 @@
 "use client";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/useAuth";
 import {
     Container,
@@ -55,7 +55,7 @@ const AssignSchedule = () => {
         if (storedData) {
             const { saId, requiredDutyHours, start, end } = JSON.parse(storedData);
             setSaId(saId);
-            setRequiredDutyHours(requiredDutyHours); // Store requiredDutyHours in state
+            setRequiredDutyHours(requiredDutyHours);
 
             if (requiredDutyHours && Array.isArray(getDutyHours)) {
                 const matchingOption = getDutyHours.find(
@@ -176,6 +176,20 @@ const AssignSchedule = () => {
         }
     };
 
+    // const handleSelectionDay = (event) => {
+    //     const selectedDay = getDays.find(
+    //         (day) => day.day_id === event.target.value
+    //     );
+    //     if (
+    //         selectedDay &&
+    //         !selectedDays.some((d) => d.day_id === selectedDay.day_id)
+    //     ) {
+    //         setSelectedDays((prev) => [...prev, selectedDay]);
+    //     }
+    //     setDays("");
+    //     console.log("Selected Days:", selectedDays);
+    // };
+
     const handleSelectionDay = (event) => {
         const selectedDay = getDays.find(
             (day) => day.day_id === event.target.value
@@ -184,10 +198,16 @@ const AssignSchedule = () => {
             selectedDay &&
             !selectedDays.some((d) => d.day_id === selectedDay.day_id)
         ) {
+            // Update the state
             setSelectedDays((prev) => [...prev, selectedDay]);
         }
-        setDays("");
+        setDays(""); // Clear the dropdown selection
     };
+
+    // Use useEffect to log the updated selectedDays
+    useEffect(() => {
+        console.log("Selected Days (updated):", selectedDays);
+    }, [selectedDays]); // This will run whenever selectedDays changes
 
     const handleStartTimeChange = (event) => {
         setStartTime(event.target.value);

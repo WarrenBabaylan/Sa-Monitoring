@@ -158,16 +158,16 @@ const Login = () => {
                 padding: "10px",
             }}
         >
-            <Container className="d-flex align-items-center justify-content-center vh-100 p-3">
+            <Container className="d-flex align-items-center justify-content-center vh-100 p-2">
                 <Card
                     className="d-flex flex-column flex-md-row shadow-lg rounded-0 w-75"
                     style={{
                         maxWidth: "750px",
-                        width: "75%",
+                        width: "70%",
                         transition: "all 0.3s ease-in-out",
                     }}
                 >
-                    <Card className="bg-success text-white p-1 w-100 d-flex flex-column align-items-center justify-content-center rounded-0" style={{ minHeight: "400px" }}>
+                    <Card className="bg-success text-white p-1 w-100 d-flex flex-column align-items-center justify-content-center rounded-0" style={{ minHeight: "200px" }}>
                         <div className="d-flex flex-column align-items-center justify-content-center flex-grow-1">
                             <Image
                                 src="/images/coc-logo.png"
