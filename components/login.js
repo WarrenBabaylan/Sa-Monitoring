@@ -167,20 +167,28 @@ const Login = () => {
                         transition: "all 0.3s ease-in-out",
                     }}
                 >
-                    <Card className="bg-success text-white p-1 w-100 d-flex flex-column align-items-center justify-content-center rounded-0">
-                        <Image
-                            src="/images/coc-logo.png"
-                            alt="Logo"
-                            width={160}
-                            height={160}
-                            priority
-                        />
-                        <h4 className="fw-bold text-center mt-2">Cagayan de Oro College</h4>
-                        <p className="text-center">
-                            PHINMA Education
-                            <br />
-                            Pro Deo et Humanitate
-                        </p>
+                    <Card className="bg-success text-white p-1 w-100 d-flex flex-column align-items-center justify-content-center rounded-0" style={{ minHeight: "400px" }}>
+                        <div className="d-flex flex-column align-items-center justify-content-center flex-grow-1">
+                            <Image
+                                src="/images/coc-logo.png"
+                                alt="Logo"
+                                width={110}
+                                height={110}
+                                priority
+                            />
+                            <h4 className="fw-bold text-center mt-2">Cagayan de Oro College</h4>
+                            <p className="text-center">
+                                PHINMA Education
+                                <br />
+                                Pro Deo et Humanitate
+                            </p>
+                        </div>
+
+                        <div className="w-100 text-center" style={{ padding: "10px 0" }}>
+                            <p className="text-white mb-3" style={{ fontSize: "0.875rem" }}>
+                                © 2025 [SA Monitoring] Beta. <strong>Developed by ITS Interns 2025. All rights reserved.</strong>
+                            </p>
+                        </div>
                     </Card>
                     <Card.Body className="w-90 p-4" style={{ backgroundColor: "#ffffff" }}>
                         <div className="text-center mb-3">
@@ -285,20 +293,6 @@ const Login = () => {
                         </Form>
                     </Card.Body>
                 </Card>
-                <div
-                    style={{
-                        position: "absolute",
-                        bottom: "20px",
-                        left: "50%",
-                        transform: "translateX(-50%)",
-                        textAlign: "center",
-                        width: "100%",
-                    }}
-                >
-                    <p className="text- mb-0">
-                        2025[SA Monitoring]Beta. <strong>Developed by ITS Interns 2025. All Rights Reserved.</strong>
-                    </p>
-                </div>
 
                 <ToastContainer position="top-end" className="p-3">
                     <Toast
